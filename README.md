@@ -16,7 +16,6 @@ ensuring safe and reliable transactions.
 Implemented an admin panel to manage shops,
 products, and user interactions, enhancing platform control and monitoring
 
-![localhost_](https://github.com/m-a-99/ecommerce2/assets/112770883/d8c212e4-d421-47e0-b521-4f3bc5f7ece2)
 ![localhost_](https://github.com/m-a-99/ecommerce2/assets/112770883/512f3642-97a8-40c6-b5a2-e0e79ba6e6b6)
 
 ![localhost_ (3)](https://github.com/m-a-99/ecommerce2/assets/112770883/cf7d6a54-e764-49c2-8b1a-9f1ee6d23f09)
