@@ -1,0 +1,13 @@
+/coderepo
+/test
+.prettierrc
+old_docker-compose.yaml
+
+node_modules/
+
+frontend-service/styles/icons
+rabbitmq-service/rabbitmq_data/**
+file-service/assets/uploads/**
+db/**
+
+!.gitkeep/

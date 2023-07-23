@@ -1,0 +1,139 @@
+version: "3"
+services:
+  db-service:
+    image: mongo
+    ports: 
+      - "27018:27017"
+    container_name: db_service
+    volumes:
+    - ./db/:/data/db
+
+
+  rabbitmq-service:
+    build: ./rabbitmq-service
+    container_name: rabbitmq_service
+    ports:
+      # - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: test
+      RABBITMQ_DEFAULT_PASS: 12345678
+    volumes:
+      - ./rabbitmq-service/rabbitmq_data:/var/lib/rabbitmq
+
+    
+
+  user-service:
+    build: ./user-service
+    container_name: user_service
+    # ports:
+    #  - "3000:3000"
+    restart: always
+    env_file:
+      - ./user-service/.env
+    volumes:
+      - ./user-service:/app
+      # -  ./app/node_modules
+    depends_on:
+      - "db-service"
+      - "rabbitmq-service"
+
+  file-service:
+    build: ./file-service
+    container_name: file_service
+    # ports:
+    #  - "3003:3003"
+
+    restart: always
+    # user: "1000:1000"
+    env_file:
+      - ./file-service/.env
+    depends_on:
+      - "db-service"
+      - "rabbitmq-service"
+    volumes:
+      - ./file-service:/app
+      # - ./app/node_modules
+  
+  shops-service:
+    build: ./shops-service
+    container_name: shops_service
+    depends_on:
+      - "db-service"
+      - "rabbitmq-service"
+    env_file:
+      - ./shops-service/.env
+    restart: always
+    volumes:
+      - ./shops-service:/app
+
+
+  admin-service:
+    build: ./admin-service
+    container_name: admin_service
+    depends_on:
+      - "db-service"
+      - "rabbitmq-service"
+    env_file:
+      - ./admin-service/.env
+    restart: always
+    volumes:
+      - ./admin-service:/app
+
+  products-service:
+    build: ./products-service
+    container_name: products_service
+    depends_on:
+      - "db-service"
+      - "rabbitmq-service"
+    env_file:
+      - ./products-service/.env
+    restart: always
+    volumes:
+      - ./products-service:/app
+  
+  shopping-service:
+    build: ./shopping-service
+    container_name: shopping_service
+    depends_on:
+      - "db-service"
+      - "rabbitmq-service"
+    env_file:
+      - ./shopping-service/.env
+    restart: always
+    volumes:
+      - ./shopping-service:/app
+
+  frontend-service: 
+    build: ./frontend-service
+    container_name: frontend_service
+    depends_on:
+      - "user-service"
+      - "file-service"
+      - "admin-service"
+      - "shops-service"
+    volumes:
+      - ./frontend-service:/app
+
+  nginx-proxy:
+    build: ./nginx-service
+    container_name: nginx_service
+    command: sh -c "dockerize -wait http://user-service:3000/test -wait http://file-service:3000/test -wait http://shops-service:3000/test -wait http://admin-service:3000/test -wait http://shopping-service:3000/test -wait tcp://frontend-service:4000/ nginx -g 'daemon off;'"
+    restart: always
+    depends_on:
+      - "user-service"
+      - "file-service"
+      - "shops-service"
+      - "admin-service"
+      - "shopping-service"
+      - "frontend-service"
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx-service/conf:/etc/nginx/
+
+
+
+
+    
+
