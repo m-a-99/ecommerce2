@@ -18,6 +18,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 };
 function index({ Attributes }: any) {
+  console.log(Attributes);
   return (
     <div>
       <Headder />

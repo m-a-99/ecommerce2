@@ -79,13 +79,16 @@ export class ShoppingRepository {
       throw new BadRequestError(e.message);
     }
   }
-  async createOrder(UserId: string, DeliverySchedule: string, OrderItems: any, Amount: number, SessionId: string) {
+  async createOrder(UserId: string, DeliverySchedule: string, Contacts: any, BillingAddress: any, ShippingAddress: any, OrderShops: any, Total: number, SessionId: string) {
     try {
       const order = new OrdersModel({
         UserId,
-        Amount,
+        Total,
         DeliverySchedule,
-        OrderItems,
+        Contacts: Contacts.map((v:any) => ({ Title: v.Title, Value: v.Value })),
+        BillingAddress:{City:BillingAddress.City,Country:BillingAddress.Country,State:BillingAddress.State,StreetAddress:BillingAddress.StreetAddress,Title:BillingAddress.Title,Zip:BillingAddress.Zip},
+        ShippingAddress:{City:ShippingAddress.City,Country:ShippingAddress.Country,State:ShippingAddress.State,StreetAddress:ShippingAddress.StreetAddress,Title:ShippingAddress.Title,Zip:ShippingAddress.Zip},
+        OrderShops,
         SessionId,
       });
       await order.save();
@@ -124,21 +127,41 @@ export class ShoppingRepository {
       throw new APIError(e.message);
     }
   }
+  async getSelleOrders(Shops: any, Page: number, Limit: number) {
+    try {
+      const orders = await OrdersModel.find({ "OrderShops.ShopId": { $in: Shops } });
+      return this.Pageination(orders, Page, Limit);
+    } catch (e: any) {
+      throw new APIError(e.message);
+    }
+  }
 
   async getShopsOrders(UserId: string) {
     try {
     } catch (e: any) {}
   }
 
-  async getOrderbyId(Id:string){
-    try{
-      const order =await OrdersModel.findById(Id).lean()
-      if(!order){
+  async getOrderbyId(Id: string) {
+    try {
+      const order = await OrdersModel.findById(Id).lean();
+      if (!order) {
         throw new BadRequestError(`order with id ${Id} not found`);
       }
-      return order
-    }catch(e:any){
-      throw new BadRequestError(e.message)
+      return order;
+    } catch (e: any) {
+      throw new BadRequestError(e.message);
+    }
+  }
+
+  async getSellerOrderbyId(Shops: any, Id: string) {
+    try {
+      const order = await OrdersModel.find({ _id: Id, "OrderShops.ShopId": { $in: Shops } }).lean();
+      if (!order) {
+        throw new BadRequestError(`order with id ${Id} not found`);
+      }
+      return order[0];
+    } catch (e: any) {
+      throw new BadRequestError(e.message);
     }
   }
   async createShipping(Name: string, Global: boolean, Amount: number, ShippingType: string, Country: string, State: string, ZIP: string) {
@@ -223,7 +246,7 @@ export class ShoppingRepository {
   }
   async getClientOrders(UserId: string, Page: number, Limit: number) {
     try {
-      const orders = await OrdersModel.find({ UserId: new mongoose.Types.ObjectId(UserId) }).sort({ createdAt:-1});
+      const orders = await OrdersModel.find({ UserId: new mongoose.Types.ObjectId(UserId) }).sort({ createdAt: -1 });
       return this.Pageination(orders, Page, Limit);
     } catch (e: any) {
       throw new APIError("get Order error");

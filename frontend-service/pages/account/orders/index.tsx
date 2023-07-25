@@ -7,10 +7,9 @@ import { GetServerSideProps } from "next";
 import { ParseCookies } from "../../../utils/ParseCookies";
 import { FetchUserInfo } from "../../../Redux/userInfo";
 import { store } from "../../../Redux/store";
-import { FetchOrders, FetchOrdersPage } from "../../../Redux/orders";
-import { useAppDispatch, useAppSelector } from "../../../Redux/hooks";
+import { FetchOrdersPage } from "../../../Redux/orders";
+import { useAppSelector } from "../../../Redux/hooks";
 import Pagination from "../../../components/lib/Pagination";
-import Cookies from "universal-cookie";
 import { useRouter } from "next/router";
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const cookies = ParseCookies(context.req.headers.cookie || "");
@@ -35,7 +34,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  if (store.getState().userInfo.value?.AccountType !== "Admin") {
+  if (!["Admin","Seller"].includes(store.getState().userInfo.value?.AccountType||"")) {
     return {
       redirect: {
         permanent: true,

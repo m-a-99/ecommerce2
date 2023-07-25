@@ -3,8 +3,9 @@ import ItemsList from "./components/ItemsList";
 import OrderAddressAndDetails from "./components/OrderAddressAndDetails";
 import OrderDetailsHedder from "./components/OrderDetailsHedder";
 import ProgressBar from "./components/ProgressBar";
-import { OrdersType } from "../../../../../types/OrdersType";
-import { useAppSelector } from "../../../../../Redux/hooks";
+import { useAppSelector } from "../../../../Redux/hooks";
+import { OrdersType } from "../../../../types/OrdersType";
+
 type props = {
   order_details_id:null| string;
 };

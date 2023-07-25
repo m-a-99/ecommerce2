@@ -65,8 +65,8 @@ export class shoppingApiController {
     });
     this.app.post("/orders", this.auth.checkAuth.bind(this.auth), async (req: any, res, next) => {
       try {
-        const { DeliverySchedule } = req.body || {};
-        const order = await this.service.createOrder(req.user, DeliverySchedule);
+        const { DeliverySchedule, Contacts, BillingAddress, ShippingAddress } = req.body || {};
+        const order = await this.service.createOrder(req.user, DeliverySchedule, Contacts, BillingAddress,  ShippingAddress);
         res.status(200).json(order);
       } catch (e: any) {
         next(e);
@@ -102,12 +102,19 @@ export class shoppingApiController {
       }
     });
 
-    this.app.get("/orders/:id", this.auth.checkAuth.bind(this.auth), this.auth.checkAdmin.bind(this.auth), async (req, res, next) => {
+    this.app.get("/orders/:id", this.auth.checkAuth.bind(this.auth), this.auth.checkAdminOrSeller.bind(this.auth), async (req: any, res, next) => {
       try {
-        const {id} =req.params||{}
-        const order=await this.service.getOrderbyId(id)
+        const { id } = req.params || {};
+        let order: any;
+        switch (req?.user?.AccountType) {
+          case "Admin":
+            order = await this.service.getAdminOrderbyId(id);
+            break;
+          case "Seller":
+            order = await this.service.getSellerOrderbyId(req.user, id);
+            break;
+        }
         res.status(200).json(order);
-
       } catch (e: any) {
         next(e);
       }
@@ -123,6 +130,9 @@ export class shoppingApiController {
             break;
           case "Admin":
             orders = await this.service.getAdminOrders(page);
+            break;
+          case "Seller":
+            orders = await this.service.getSelleOrders(req.user, page);
             break;
         }
 

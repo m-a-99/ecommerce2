@@ -32,6 +32,11 @@ export class shopsService {
     return resData;
   }
 
+  private async RPCgetShopsByOwner(Ids:string[]){
+      const resData = await this.RPCcall("GetShopsByOwners", JSON.stringify({ Ids }));
+      return resData;
+  }
+
   private async RPCgetShops(Ids: string[]) {
     const resData = await this.RPCcall("GetShops", JSON.stringify({ Ids }));
     return resData;
@@ -56,6 +61,9 @@ export class shopsService {
   /*************************************************************************** */
   /*************************************************************************** */
 
+  async getShopsbyOwners(Ids:string[]){
+    return await this.RPCgetShopsByOwner(Ids);
+  }
   async getShopsByIds(Ids:string[]){
     return await this.RPCgetShops(Ids)
   }

@@ -20,10 +20,9 @@ const SimpleProduct = new Schema({
   DigitalProductFile: { type: String },
 });
 
-
 const VarientAttributeValue = new Schema({
-  Attribute: { _id: { type: Schema.Types.ObjectId, required: true }, Name: { type: String, required: true }},
-  Value: {_id:{ type: Schema.Types.ObjectId, required: true },Attribute:{ type: Schema.Types.ObjectId, required: true }, Value: { type: String, required: true },Meta: { type: String, required: true }},
+  Attribute: { _id: { type: Schema.Types.ObjectId, required: true }, Name: { type: String, required: true } },
+  Value: { _id: { type: Schema.Types.ObjectId, required: true }, Attribute: { type: Schema.Types.ObjectId, required: true }, Value: { type: String, required: true }, Meta: { type: String, required: true } },
 });
 
 const VariableProductVarient = new Schema({
@@ -63,13 +62,36 @@ const OrderItem = new Schema({
   Quantity: { type: Number, required: true },
 });
 
+const OrderShop = new Schema({
+  ShopId: { type: Schema.Types.ObjectId, required: true },
+  OrderItems: [OrderItem],
+  ShopOrderStatus: { type: String, default: "Order Received" },
+  Amount: { type: Number, default: 0 },
+});
+const Address = new Schema({
+  Title: { type: String, required: true },
+  Country: { type: String, required: true },
+  City: { type: String, required: true },
+  State: { type: String, required: true },
+  Zip: { type: String, required: true },
+  StreetAddress: { type: String, required: true },
+});
+
+const Contact = new Schema({
+  Title: { type: String, required: true },
+  Value: { type: String, required: true },
+});
+
 const Orders = new Schema(
   {
+    BillingAddress:Address,
+    ShippingAddress:Address,
+    Contacts:[Contact],
     UserId: { type: Schema.Types.ObjectId },
-    Status: { type: Schema.Types.ObjectId },
+    Status: { type: String, default: "Order Received" },
     DeliverySchedule: { type: String, required: true },
-    OrderItems: [OrderItem],
-    Amount: { type: Number, default: 0 },
+    OrderShops: [OrderShop],
+    Total: { type: Number, default: 0 },
     SessionId: { type: Schema.Types.ObjectId, required: true },
   },
   { timestamps: true, collection: "orders" }

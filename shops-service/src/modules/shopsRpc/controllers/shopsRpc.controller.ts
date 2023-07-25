@@ -51,5 +51,11 @@ export class shopsRpcController {
       const resData = await this.service.RPCgetShopsByIds(Ids);
       return resData
     });
+
+    this.msgq.Rigester("GetShopsByOwners",async(msg)=>{
+      const {Ids}=JSON.parse(msg)||{};
+      const resData=await this.service.RPCgetShopsByOwnersIds(Ids);
+      return resData
+    })
   }
 }

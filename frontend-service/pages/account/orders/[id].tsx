@@ -13,11 +13,11 @@ import { ParseCookies } from "../../../utils/ParseCookies";
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const cookies = ParseCookies(context.req.headers.cookie || "");
   await store.dispatch(FetchUserInfo(cookies["jwt"] || ""));
-  if (store.getState().userInfo.value?.AccountType !== "Admin") {
+  if (!["Admin","Seller"].includes(store.getState().userInfo.value?.AccountType||"")  ) {
     return {
       redirect: {
         permanent: true,
-        destination: "/account",
+        destination: "/",
       },
     };
   }

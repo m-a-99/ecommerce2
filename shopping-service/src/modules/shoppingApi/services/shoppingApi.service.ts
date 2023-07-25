@@ -6,7 +6,7 @@ import { BadRequestError, UnauthorizedError } from "../../../utils/app-errors";
 import { shoppingApiRemoteService } from "./shoppingApi.remote.service";
 
 export class shoppingApiService {
-  constructor(private repository: ShoppingRepository, private remoteService: shoppingApiRemoteService, private users_service: usersService, private products_service: productsService,private shops_service:shopsService) {}
+  constructor(private repository: ShoppingRepository, private remoteService: shoppingApiRemoteService, private users_service: usersService, private products_service: productsService, private shops_service: shopsService) {}
   // async CreateSession(SessionId: string) {
   //   const session = await this.repository.createSession(SessionId);
   //   return { SessionId: session?._id };
@@ -45,30 +45,48 @@ export class shoppingApiService {
     return session;
   }
 
-  async createOrder(User: any, DeliverySchedule: string) {
-    if (!User) {
-      throw new UnauthorizedError("login required to order");
-    }
+  async createOrder(User: any, DeliverySchedule: string, Contacts: { Type: string; Value: string }[], BillingAddress: any, ShippingAddress: any) {
+    // if (!User) {
+    //   throw new UnauthorizedError("login required to order");
+    // }
     const session = await this.GetSession(User);
-    await this.repository.closeSession(session.session._id);
     if (session.session.Cart.length === 0) {
       throw new BadRequestError("empty Cart");
     }
     let products = await this.products_service.getCartProductsByIds(session.session.Cart);
-    const OrderItems: any = [];
+    const OrderShops: any = {};
     session.session.Cart.forEach((Cartitem: any) => {
       // const cartItem = session.session.Cart.filter((v: any) => (v.ProductId = Product._id))[0];
       const Product = { ...products[Cartitem.ProductId] };
       if (Product.ProductType !== "Simple") {
         Product.VariableProduct = Product.VariableProduct.filter((v: any) => "" + v._id === "" + Cartitem.VariableId);
       }
-      OrderItems.push({ Product, Quantity: Cartitem.Quantity });
+      if (OrderShops[Product.ShopId]?.OrderItems) {
+        OrderShops[Product.ShopId].OrderItems.push({ Product, Quantity: Cartitem.Quantity });
+      } else {
+        7;
+        OrderShops[Product.ShopId] = { OrderItems: [{ Product, Quantity: Cartitem.Quantity }], ShopId: Product.ShopId };
+      }
     });
-    const Amount = OrderItems.reduce((pre: any, cur: any) => {
-      return pre + (cur.Product.ProductType === "Simple" ? cur.Product.SimpleProduct.Price : cur.Product.VariableProduct[0].Price);
-    }, 0);
+
+    let Total = 0;
+    for (const key in OrderShops) {
+      let amount = OrderShops[key].OrderItems.reduce((pre: number, cur: any) => {
+        return pre + (cur.Product.ProductType === "Simple" ? cur.Product.SimpleProduct.Price : cur.Product.VariableProduct[0].Price);
+      }, 0);
+      OrderShops[key].Amount = amount;
+      Total += amount;
+    }
+    const OrderShopsArr = Object.values(OrderShops);
+    // const Total: number = OrderShopsArr.reduce((pre: number, cur: any) => {
+    //   return pre + cur.Amount;
+    // }, 0) as number;
+    // const Amount = OrderٍShops.reduce((pre: any, cur: any) => {
+    //   return pre + (cur.Product.ProductType === "Simple" ? cur.Product.SimpleProduct.Price : cur.Product.VariableProduct[0].Price);
+    // }, 0);
     // console.log(OrderItems);
-    const order = await this.repository.createOrder(User._id, DeliverySchedule, OrderItems, Amount, session.session._id);
+    const order = await this.repository.createOrder(User._id, DeliverySchedule, Contacts, BillingAddress, ShippingAddress, OrderShopsArr, Total, session.session._id);
+    await this.repository.closeSession(session.session._id);
     return order;
   }
 
@@ -95,21 +113,45 @@ export class shoppingApiService {
   }
 
   async getAdminOrders(Page: number) {
-    return await this.repository.getAdminOrders(Page,4);
+    return await this.repository.getAdminOrders(Page, 4);
   }
+  async getSelleOrders(User: any, Page: number) {
+    const Shops: any = await this.shops_service.getShopsbyOwners([User._id]);
 
-  async getOrderbyId(Id:string){
-    const order= await this.repository.getOrderbyId(Id);
-    const shops:any = await this.shops_service.getShopsByIds(order.OrderItems.map(v=>""+v.Product?.ShopId||"").filter(v=>v!==""))||{}
-    order.OrderItems=order.OrderItems.map(v=>({
-      ...v,Product:{...v.Product,Shop:shops[""+v.Product?.ShopId]}
-    })) as any
-    return order
+    return await this.repository.getSelleOrders(
+      Object.values(Shops).map((shop: any) => shop._id),
+      Page,
+      4
+    );
+  }
+  async getAdminOrderbyId(Id: string) {
+    const order = await this.repository.getOrderbyId(Id);
+    const shops: any = (await this.shops_service.getShopsByIds(order.OrderShops.map((v) => "" + v.ShopId))) || {};
+    order.OrderShops = order.OrderShops.map((v) => ({
+      ...v,
+      Shop: shops["" + v.ShopId],
+    })) as any;
+    return order;
     // order.fore
   }
 
-  async getClientOrders(user: any,Page:number) {
-    return await this.repository.getClientOrders(user._id, Page,4);
+  async getSellerOrderbyId(User: any, Id: string) {
+    const Shops: any = await this.shops_service.getShopsbyOwners([User._id]);
+    const shopsids = Object.values(Shops).map((shop: any) => shop._id);
+    const order: any = await this.repository.getSellerOrderbyId(shopsids, Id);
+    console.log(shopsids);
+    order.OrderShops = order.OrderShops.filter((v: any) => shopsids.includes("" + v.ShopId));
+    order.OrderShops = order.OrderShops.map((v: any) => ({
+      ...v,
+      Shop: Shops["" + v.ShopId],
+    })) as any;
+    console.log(order);
+
+    return order;
+    // order.fore
+  }
+  async getClientOrders(user: any, Page: number) {
+    return await this.repository.getClientOrders(user._id, Page, 4);
   }
 
   async getShippings(Page: number) {
@@ -127,6 +169,4 @@ export class shoppingApiService {
   async createShipping(Name: string, Global: boolean, Amount: number, ShippingType: string, Country: string, State: string, ZIP: string) {
     return await this.repository.createShipping(Name, Global, Amount, ShippingType, Country, State, ZIP);
   }
-
-  
 }

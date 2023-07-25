@@ -16,10 +16,14 @@ function OrdersTable({ Orders }: props) {
             return {
               "Tracking Number": v._id,
               "Delivery Fee": 0,
-              Total: v.Amount,
+              Total: v.Total,
               "Order Date": new Date(v.createdAt).toUTCString(),
               Status: v.Status,
-              "Shipping Address": "aaa",
+              "Shipping Address":(<div className="text-sm text-left text-gray-500">
+            <div>{v.BillingAddress?.Title}</div>
+            <div>{v.BillingAddress?.StreetAddress}</div>
+            <div>{`${v.BillingAddress?.City} , ${v.BillingAddress?.State} , ${v.BillingAddress?.Zip} , ${v.ShippingAddress?.Country}`}</div>
+          </div>),
               Actions: (
                 <div className="flex justify-center">
                   <div className="w-full">

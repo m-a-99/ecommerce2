@@ -339,7 +339,7 @@ export class ShopsRepository {
   }
 
   async createAuthor(Image: string, Name: string, Languages: string, Bio: string, Quote: string, Born: string, Death: string, SocialProfiles: string[]) {
-    console.log(Born,Death)
+    console.log(Born, Death);
     try {
       const author = new AuthorsModel({
         Image,
@@ -358,7 +358,7 @@ export class ShopsRepository {
     }
   }
 
-  async updateAuthor(Owner:any,_id: string, Image: string, Name: string,  Languages: string, Bio: string, Quote: string, Born: string, Death: string, SocialProfiles: any[], DeletedSocialProfilesIds: string[]) {
+  async updateAuthor(Owner: any, _id: string, Image: string, Name: string, Languages: string, Bio: string, Quote: string, Born: string, Death: string, SocialProfiles: any[], DeletedSocialProfilesIds: string[]) {
     try {
       const author = await AuthorsModel.findById(_id);
       if (!author) {
@@ -445,7 +445,15 @@ export class ShopsRepository {
       const shops = await ShopsModel.find({ Owner: Owner, _id: { $in: Ids } });
       return shops;
     } catch (e: any) {
-      throw new APIError("get Authors By Ids error", e.message);
+      throw new APIError("get Owner Shops By Ids error", e.message);
+    }
+  }
+  async getShopsByOwnersIds(Ids: string[]) {
+    try {
+      const shops = await ShopsModel.find({ Owner: { $in: Ids } });
+      return shops;
+    } catch (e: any) {
+      throw new APIError("get Owner Shops By Ids error", e.message);
     }
   }
   async getShopsByIds(Ids: string[]) {

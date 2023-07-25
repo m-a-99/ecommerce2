@@ -4,13 +4,15 @@ import { toast } from "react-toastify";
 import useDeleteFetch from "../../custom_hooks/useDeleteFetch";
 import usePostFetch from "../../custom_hooks/usePostFetch";
 import { useAppSelector } from "../../Redux/hooks";
-import { setUserInfoValue } from "../../Redux/userInfo";
 import ConfDelete from "../lib/ConfDelete";
 import Spinner from "../lib/Spinner";
-
-const ContactNubmer = () => {
+import { ContactType } from "../../types/UserInfoType";
+type props = {
+  contacts: ContactType[];
+  setcontacts: (v:ContactType[]|((v:ContactType[])=>ContactType[]))=>void;
+};
+const ContactNubmer = ({contacts,setcontacts}:props) => {
   const userInfo = useAppSelector((state) => state.userInfo.value);
-
   const [addcontact, setaddcontact] = useState(false);
   const [addEnable, setaddEnable] = useState(false);
   const [Title, setTitle] = useState("");
@@ -19,20 +21,25 @@ const ContactNubmer = () => {
   const { data: deleteData, IsPending: deleteIsPending, err: deleteErr, Delete } = useDeleteFetch();
   const [DeleteEn, setDeleteEn] = useState(false);
   const [DeleteContactId, setDeleteContactId] = useState("");
-  const dispatch = useDispatch();
-  useEffect(() => {
-    if (data) {
-      setTitle("");
-      setValue("");
-      setaddcontact(false);
-      dispatch(setUserInfoValue(data));
-    }
-  }, [data]);
+  // const dispatch = useDispatch();
+  // useEffect(() => {
+  //   if (data) {
+  //     setTitle("");
+  //     setValue("");
+  //     setaddcontact(false);
+  //     dispatch(setUserInfoValue(data));
+  //   }
+  // }, [data]);
   function add() {
-    const payload: any = {};
-    Title && (payload.Title = Title);
-    Value && (payload.Value = Value);
-    post("/user-service/profile/contact", JSON.stringify(payload));
+    // const payload: any = {};
+    // Title && (payload.Title = Title);
+    // Value && (payload.Value = Value);
+    // post("/user-service/profile/contact", JSON.stringify(payload));
+    setcontacts(v=>([...v,{_id:crypto.randomUUID(),Title,Value}]))
+    setaddcontact(false);
+    setTitle("")
+    setValue("")
+
   }
 
   useEffect(() => {
@@ -48,27 +55,28 @@ const ContactNubmer = () => {
     setDeleteEn(true)
   }
   function delete_contact(ContactId: string) {
-    const payload: any = {};
-    ContactId && (payload.ContactId = ContactId);
-    Delete("/user-service/profile/contact", JSON.stringify(payload));
+    // const payload: any = {};
+    // ContactId && (payload.ContactId = ContactId);
+    // Delete("/user-service/profile/contact", JSON.stringify(payload));
+    setcontacts(contacts=>contacts.filter(contact=>contact._id!==ContactId))
     setDeleteEn(false);
     setDeleteContactId("")
   }
 
-  useEffect(() => {
-    if (deleteData) {
-      dispatch(setUserInfoValue(deleteData));
-    }
-  }, [deleteData]);
+  // useEffect(() => {
+  //   if (deleteData) {
+  //     dispatch(setUserInfoValue(deleteData));
+  //   }
+  // }, [deleteData]);
 
-  useEffect(() => {
-    if (err) {
-      toast(err.message, { type: "error" });
-    }
-    if (deleteErr) {
-      toast(deleteErr.message, { type: "error" });
-    }
-  }, [err, deleteErr]);
+  // useEffect(() => {
+  //   if (err) {
+  //     toast(err.message, { type: "error" });
+  //   }
+  //   if (deleteErr) {
+  //     toast(deleteErr.message, { type: "error" });
+  //   }
+  // }, [err, deleteErr]);
 
   return (
     <div>
@@ -118,8 +126,8 @@ const ContactNubmer = () => {
             </div>
           </div>
           <div className="flex gap-3 flex-wrap justify-center md:justify-start lg:justify-start">
-            {userInfo?.Contacts &&
-              userInfo?.Contacts.map((e) => (
+            {contacts &&
+              contacts.map((e) => (
                 <div className=" max-w-[250px] min-w-[150px] space-y-2 rounded-xl bg-gray-100  p-5 text-sm" key={e._id}>
                   <div className="flex justify-between ">
                     <div className="font-bold text-zinc-800">

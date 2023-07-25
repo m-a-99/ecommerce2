@@ -18,7 +18,7 @@ import { FetchUserInfo } from "../../../Redux/userInfo";
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const cookies = ParseCookies(context.req.headers.cookie || "");
   await store.dispatch(FetchUserInfo(cookies["jwt"] || ""));
-  if (store.getState().userInfo.value?.AccountType!=="Seller") {
+  if (store.getState().userInfo.value?.AccountType!="Seller") {
     return {
       // redirect: {
       //   permanent: true,

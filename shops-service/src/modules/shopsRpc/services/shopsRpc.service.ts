@@ -15,6 +15,9 @@ export class shopsRpcService {
   async RPCgetShopsByIds(Ids: string[]) {
     return ArrToObj(await this.repository.getShopsByIds(Ids), "_id");
   }
+  async RPCgetShopsByOwnersIds(Ids: string[]) {
+    return ArrToObj(await this.repository.getShopsByOwnersIds(Ids), "_id");
+  }
 
   async RPCcheckIsAttributesExist(Ids: string[]) {
     return await this.#CheckExist(Ids, "Attribute", async (Ids: string[]) => await this.repository.getAttributesByIds(Ids));

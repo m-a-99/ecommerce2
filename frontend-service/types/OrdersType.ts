@@ -1,4 +1,6 @@
 import { ProductType } from "./ProductType"
+import { ShopsType } from "./ShopsType";
+import { AddressType, ContactType } from "./UserInfoType";
 
 
 export type OrderItem ={
@@ -6,13 +8,27 @@ export type OrderItem ={
   Quantity: number,
 }
 
+
+export type OrderShop = {
+  ShopId: string;
+  Shop:ShopsType;
+  OrderItems: [OrderItem];
+  ShopOrderStatus: string;
+  Amount: number;
+};
+
+
 export type OrdersType = {
   _id: string;
   UserId: string;
   Status: string;
   DeliverySchedule: string;
-  OrderItems: [OrderItem];
-  Amount: number;
+  BillingAddress: AddressType;
+  ShippingAddress: AddressType;
+  Contacts:ContactType[];
+  OrderShops: [OrderShop];
+  Total: number;
   SessionId: string;
-  createdAt:string;
+  createdAt: string;
 };
+

@@ -30,13 +30,13 @@ const OrderCard = ({ order, index }: props) => {
         <div className="flex justify-between  space-x-2">
           <div className="w-5/12">Amount</div>
           <div className="w-2/12 text-center">:</div>
-          <div className="text-right w-5/12">${order.Amount}</div>
+          <div className="text-right w-5/12">${order.Total}</div>
         </div>
         <div className="flex justify-between space-x-2 ">
           <div className="w-5/12">Total Price</div>
           <div className="w-2/12 text-center">:</div>
           <div className=" w-5/12 text-right">
-            ${order.Amount}
+            ${order.Total}
             {/* {(order.tax +
               order.delivery_fee +
               order.order_items
