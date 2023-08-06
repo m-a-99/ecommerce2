@@ -39,7 +39,7 @@ function Pagination({ Page, HasNext, setPage,Pages }: props) {
         )}
         {/***************************************** */}
 
-        {!HasNext && Page - 2 > 0 && (
+        {!HasNext && Page - 2 > 1 && (
           <div
             onClick={() => {
               setPage((v) => v - 2);

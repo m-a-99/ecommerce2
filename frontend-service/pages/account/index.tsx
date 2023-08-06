@@ -22,11 +22,10 @@ const Account = () => {
     <div>
       <Headder />
       <div className="flex mt-[60px]">
-        <div className="w-[350px] h-[calc(100vh-62px)]">
+        <div className="w-[260px] h-[calc(100vh-62px)]">
           <NavList />
         </div>
-        <div className=" w-full flex justify-between">
-        </div>
+        <div className="  w-[calc(100%-260px)] flex justify-between"></div>
       </div>
     </div>
   );

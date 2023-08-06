@@ -63,11 +63,15 @@ const OrderItem = new Schema({
 });
 
 const OrderShop = new Schema({
+  AdminDeliveryStatus: { type: String, values: ["Waiting", "Pending", "Rejected", "Approved"], default: "Wating" },
+  Message: { type: String, default: "" },
+  MessageLog: { type: String, defult: "" },
   ShopId: { type: Schema.Types.ObjectId, required: true },
   OrderItems: [OrderItem],
-  ShopOrderStatus: { type: String, default: "Order Received" },
+  ShopOrderStatus: { type:Schema.Types.ObjectId,required:true},
   Amount: { type: Number, default: 0 },
 });
+
 const Address = new Schema({
   Title: { type: String, required: true },
   Country: { type: String, required: true },
@@ -88,7 +92,7 @@ const Orders = new Schema(
     ShippingAddress:Address,
     Contacts:[Contact],
     UserId: { type: Schema.Types.ObjectId },
-    Status: { type: String, default: "Order Received" },
+    Status: { type: Schema.Types.ObjectId,required:true },
     DeliverySchedule: { type: String, required: true },
     OrderShops: [OrderShop],
     Total: { type: Number, default: 0 },

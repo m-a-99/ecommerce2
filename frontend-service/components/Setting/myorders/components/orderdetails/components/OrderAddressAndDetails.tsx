@@ -7,6 +7,7 @@ type props={
 }
 
 const OrderAddressAndDetails = ({order}:props) => {
+  console.log(order)
   return (
     <div className="p-5  grid grid-cols-12 border-b-[1px] gap-5 border-gray-300 ">
       <div className="col-span-5 border-r-[1px] space-y-2  border-gray-300">
@@ -33,7 +34,7 @@ const OrderAddressAndDetails = ({order}:props) => {
           <div className="pr-2">
             <div className="space-y-3 overflow-y-auto customscrollbar max-h-[250px]">
               {order.Contacts.map((contact) => (
-                <div className="text-sm text-gray-500">
+                <div key={contact._id} className="text-sm text-gray-500">
                   <div className="text-gray-500 font-semibold truncate ">{contact?.Title}</div>
                   <div className="truncate">{contact.Value}</div>
                 </div>

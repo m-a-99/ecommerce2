@@ -1,6 +1,7 @@
-import mongoose from "mongoose";
+import mongoose, { Collection, Model } from "mongoose";
 import { APIError, BadRequestError } from "../../utils/app-errors";
 import { OrdersModel, ShippingsModel, ShoppingSessionModel, WishListModel } from "../models";
+import { OrderStatusModel } from "../models/OrderStatus";
 
 export class ShoppingRepository {
   // async getSessionById(SessionId: string) {
@@ -79,15 +80,39 @@ export class ShoppingRepository {
       throw new BadRequestError(e.message);
     }
   }
+  async getOrCreateFirstShopOrderStatus() {
+    try {
+      const orderstatusList = await OrderStatusModel.find({ Role: "Seller", Serial: 1 });
+      let orderstatus;
+      if (orderstatusList.length === 0) {
+        orderstatus = new OrderStatusModel({ Serial: 1, Role: "Seller", Color: true, Name: "Order Received" });
+        await orderstatus.save();
+      } else {
+        orderstatus = orderstatusList[0];
+      }
+      return orderstatus;
+    } catch (e: any) {
+      throw new APIError(e.message);
+    }
+  }
   async createOrder(UserId: string, DeliverySchedule: string, Contacts: any, BillingAddress: any, ShippingAddress: any, OrderShops: any, Total: number, SessionId: string) {
+    const orderstatusList = await OrderStatusModel.find({ Serial: 1, Role: "Admin" });
+    let orderstatus;
+    if (orderstatusList.length === 0) {
+      orderstatus = new OrderStatusModel({ Serial: 1, Role: "Admin", Color: true, Name: "Order Received" });
+      await orderstatus.save();
+    } else {
+      orderstatus = orderstatusList[0];
+    }
     try {
       const order = new OrdersModel({
         UserId,
         Total,
+        Status: orderstatus._id,
         DeliverySchedule,
-        Contacts: Contacts.map((v:any) => ({ Title: v.Title, Value: v.Value })),
-        BillingAddress:{City:BillingAddress.City,Country:BillingAddress.Country,State:BillingAddress.State,StreetAddress:BillingAddress.StreetAddress,Title:BillingAddress.Title,Zip:BillingAddress.Zip},
-        ShippingAddress:{City:ShippingAddress.City,Country:ShippingAddress.Country,State:ShippingAddress.State,StreetAddress:ShippingAddress.StreetAddress,Title:ShippingAddress.Title,Zip:ShippingAddress.Zip},
+        Contacts: Contacts.map((v: any) => ({ Title: v.Title, Value: v.Value })),
+        BillingAddress: { City: BillingAddress.City, Country: BillingAddress.Country, State: BillingAddress.State, StreetAddress: BillingAddress.StreetAddress, Title: BillingAddress.Title, Zip: BillingAddress.Zip },
+        ShippingAddress: { City: ShippingAddress.City, Country: ShippingAddress.Country, State: ShippingAddress.State, StreetAddress: ShippingAddress.StreetAddress, Title: ShippingAddress.Title, Zip: ShippingAddress.Zip },
         OrderShops,
         SessionId,
       });
@@ -121,13 +146,23 @@ export class ShoppingRepository {
 
   async getAdminOrders(Page: number, Limit: number) {
     try {
-      const orders = await OrdersModel.find();
+      const orders = await OrdersModel.aggregate([
+        {
+          $lookup: {
+            from: "OrderStatus",
+            localField: "Status",
+            foreignField: "_id",
+            as: "Status",
+          },
+        },
+        { $unwind: "$Status" },
+      ]);
       return this.Pageination(orders, Page, Limit);
     } catch (e: any) {
       throw new APIError(e.message);
     }
   }
-  async getSelleOrders(Shops: any, Page: number, Limit: number) {
+  async getSellerOrders(Shops: any, Page: number, Limit: number) {
     try {
       const orders = await OrdersModel.find({ "OrderShops.ShopId": { $in: Shops } });
       return this.Pageination(orders, Page, Limit);
@@ -136,18 +171,33 @@ export class ShoppingRepository {
     }
   }
 
-  async getShopsOrders(UserId: string) {
+  async getOrderStatusByIds(Ids: any[]) {
     try {
-    } catch (e: any) {}
+      const order = await OrderStatusModel.find({ _id: { $in: Ids } });
+      return order;
+    } catch (e: any) {
+      throw new BadRequestError(e.message);
+    }
   }
 
   async getOrderbyId(Id: string) {
     try {
-      const order = await OrdersModel.findById(Id).lean();
-      if (!order) {
+      const order = await OrdersModel.aggregate([
+        { $match: { _id: new mongoose.Types.ObjectId(Id) } },
+        {
+          $lookup: {
+            from: "OrderStatus",
+            localField: "Status",
+            foreignField: "_id",
+            as: "Status",
+          },
+        },
+        { $unwind: "$Status" },
+      ]);
+      if (order.length < 1) {
         throw new BadRequestError(`order with id ${Id} not found`);
       }
-      return order;
+      return order[0];
     } catch (e: any) {
       throw new BadRequestError(e.message);
     }
@@ -155,11 +205,11 @@ export class ShoppingRepository {
 
   async getSellerOrderbyId(Shops: any, Id: string) {
     try {
-      const order = await OrdersModel.find({ _id: Id, "OrderShops.ShopId": { $in: Shops } }).lean();
+      const order = await OrdersModel.find({ _id: Id, "OrderShops.ShopId": { $in: Shops } });
       if (!order) {
         throw new BadRequestError(`order with id ${Id} not found`);
       }
-      return order[0];
+      return order[0].toObject();
     } catch (e: any) {
       throw new BadRequestError(e.message);
     }
@@ -244,12 +294,205 @@ export class ShoppingRepository {
       throw new BadRequestError(e.message);
     }
   }
+
   async getClientOrders(UserId: string, Page: number, Limit: number) {
     try {
-      const orders = await OrdersModel.find({ UserId: new mongoose.Types.ObjectId(UserId) }).sort({ createdAt: -1 });
+      const orders = await OrdersModel.aggregate([
+        {
+          $lookup: {
+            from: "OrderStatus",
+            localField: "Status",
+            foreignField: "_id",
+            as: "Status",
+          },
+        },
+        { $unwind: "$Status" },
+        { $sort: { createdAt: -1 } },
+      ]);
+      //.sort({ createdAt: -1 });
       return this.Pageination(orders, Page, Limit);
     } catch (e: any) {
       throw new APIError("get Order error");
+    }
+  }
+
+  async createOrderStatus(Name: string, Role: string, HasFail: boolean = false, FailName: string) {
+    try {
+      const tmp = await OrderStatusModel.find({ Role: Role, IsDeleted: false }).sort({ Serial: -1 }).limit(1);
+
+      const Serial = (tmp[0]?.Serial || 0) + 1;
+      let orderstatus;
+      let orderstatus2;
+
+      if (HasFail) {
+        orderstatus = new OrderStatusModel({
+          Name,
+          Serial,
+          Role,
+          Type: "Success",
+        });
+        orderstatus2 = new OrderStatusModel({
+          Name: FailName,
+          Serial,
+          Role,
+          Type: "Fail",
+        });
+      } else {
+        orderstatus = new OrderStatusModel({
+          Name,
+          Serial,
+          Role,
+          Type: "Success",
+        });
+      }
+
+      await orderstatus.save();
+      const res = [orderstatus];
+      if (orderstatus2) {
+        await orderstatus2.save();
+        res.push(orderstatus2);
+      }
+      return res;
+    } catch (e: any) {
+      throw new BadRequestError(e.message);
+    }
+  }
+
+  async deleteOrderStatus(Id: string) {
+    try {
+      const OrderStatus = await OrderStatusModel.findById(Id);
+      if (!OrderStatus) {
+        throw new BadRequestError(`status with id ${Id} not fount`);
+      }
+      OrderStatus.IsDeleted = true;
+      await OrderStatus.save();
+      return OrderStatus;
+    } catch (e: any) {
+      throw new BadRequestError(e.message);
+    }
+  }
+
+  async editOrderStatus(Id: string, Name: string, Serial: number, Role: string, Type: string) {
+    try {
+      const orderstatus = await OrderStatusModel.findById(Id);
+      if (!orderstatus) {
+        throw new BadRequestError(`orderstatus with id ${Id} not found`);
+      }
+      Name && (orderstatus.Name = Name);
+      Serial !== undefined && (orderstatus.Serial = Serial);
+      Role && (orderstatus.Role = Role);
+      Type && (orderstatus.Type = Type);
+
+      await orderstatus.save();
+      return orderstatus;
+    } catch (e: any) {
+      throw new BadRequestError(e.message);
+    }
+  }
+
+  async getOrderStatus(Page: number, Limit: number, Role: string) {
+    // try {
+    //   const orderstatus = await OrderStatusModel.find({ Role, IsDeleted: false }).sort({ Serial: 1, Type: -1 });
+    //   return this.Pageination(orderstatus, Page, Limit);
+    // } catch (e: any) {
+    //   throw new APIError(e.message);
+    // }
+    try {
+      return await this.Pageination2(
+        async () => {
+          const filter = { Role, IsDeleted: false };
+          const count = await OrderStatusModel.countDocuments(filter);
+          const query = OrderStatusModel.find(filter);
+          return { count, query };
+        },
+        Page,
+        Limit,
+        (collection) => {
+          return collection.sort({ Serial: 1, Type: -1 });
+        }
+      );
+    } catch (e: any) {
+      throw new APIError(e.message);
+    }
+  }
+
+  async getAllOrderStatus(Role: string) {
+    try {
+      const orderstatus = await OrderStatusModel.find({ Role, IsDeleted: false }).sort({ Serial: 1, Type: -1 });
+      return orderstatus;
+    } catch (e: any) {
+      throw new APIError(e.message);
+    }
+  }
+  async getOrderStatusById(Id: string) {
+    try {
+      const orderstatus = await OrderStatusModel.findById(Id);
+      if (!orderstatus) {
+        throw new BadRequestError("order status with id ${Id} not found");
+      }
+      return orderstatus;
+    } catch (e: any) {
+      throw new BadRequestError(e.message);
+    }
+  }
+
+  async updateOrderShopsStatus(OrderId: string, ShopId: string, StatusId: string) {
+    try {
+      const [order, OrderStatus] = await Promise.all([OrdersModel.findById(OrderId), OrderStatusModel.find({ _id: StatusId, Role: "Seller" })]);
+      if (!order) {
+        throw new BadRequestError(`order with id ${OrderId} not found`);
+      }
+      if (OrderStatus.length === 0) {
+        throw new BadRequestError(`status with id ${StatusId} not found`);
+      }
+      const shop = order.OrderShops.find((v) => "" + v.ShopId === ShopId);
+      if (!shop) {
+        throw new BadRequestError(`OrderShop with id ${ShopId} for order ${OrderId} not found`);
+      }
+      shop.ShopOrderStatus = new mongoose.Types.ObjectId(StatusId);
+      await order.save();
+      return order;
+    } catch (e: any) {
+      throw new BadRequestError(e.message);
+    }
+  }
+
+  async updateOrderStatus(Id: string, StatusId: string) {
+    try {
+      const [order, status] = await Promise.all([OrdersModel.findById(Id), OrderStatusModel.findById(StatusId)]);
+      if (!order) {
+        throw new BadRequestError(`order with id ${Id} not found`);
+      }
+      if (!status) {
+        throw new BadRequestError(`status whith id ${StatusId} not found`);
+      }
+      order.Status = status._id;
+      await order.save();
+      return order;
+    } catch (e: any) {
+      throw new BadRequestError(e.message);
+    }
+  }
+
+  async updateOrderDeliveryState(Id: string, ShopId: string, State: string, Message: string) {
+    try {
+      const order = await OrdersModel.find({ _id: Id, "OrderShops.ShopId": ShopId });
+
+      if (order.length > 0) {
+        for (const shop of order[0].OrderShops) {
+          if ("" + shop.ShopId === ShopId) {
+            State && (shop.AdminDeliveryStatus = State);
+            Message && (shop.Message = Message);
+            Message && (shop.MessageLog = (shop.MessageLog || "") + (shop.MessageLog ? "\n" : "") + `-${new Date().toUTCString()}-: ${shop.AdminDeliveryStatus} => ${Message}`);
+          }
+        }
+        await order[0].save();
+        return order[0].toObject();
+      } else {
+        throw new BadRequestError(`order with id ${Id} and orderShopId ${ShopId} not found`);
+      }
+    } catch (e: any) {
+      throw new BadRequestError(e.message);
     }
   }
 
@@ -267,6 +510,22 @@ export class ShoppingRepository {
   //   const HasNext = Page * Limit + Limit < count;
   //   return { Data: result, Page: CurPage, HasNext,Count:count };
   // }
+  private async Pageination2(cb1: () => Promise<{ count: number; query: mongoose.Query<any[], any, {}, any> | mongoose.Aggregate<any[]> }>, Page: number = 1, Limit: number = 12, cb2: (d: mongoose.Query<any[], any, {}, any> | mongoose.Aggregate<any[]>) => any) {
+    Page = Page < 1 ? 0 : Page - 1;
+    const { count, query } = await cb1();
+    let result;
+    if (Page * Limit + Limit <= count) {
+      const data = query.skip(Page * Limit).limit(Limit);
+      result = await cb2(data);
+    } else {
+      const data = query.skip(Math.trunc(count / Limit) * Limit);
+      result = await cb2(data);
+    }
+    let CurPage = Page * Limit + Limit < count ? Page + 1 : Math.ceil(count / Limit);
+    CurPage = CurPage === 0 ? 1 : CurPage;
+    const HasNext = Page * Limit + Limit < count;
+    return { Data: result, Page: CurPage, HasNext, Count: count, Pages: Math.ceil(count / Limit) };
+  }
 
   private Pageination(Data: any[], Page: number = 1, Limit: number = 12) {
     Page = Page < 1 ? 0 : Page - 1;

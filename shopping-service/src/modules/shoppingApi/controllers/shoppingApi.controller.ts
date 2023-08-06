@@ -66,7 +66,7 @@ export class shoppingApiController {
     this.app.post("/orders", this.auth.checkAuth.bind(this.auth), async (req: any, res, next) => {
       try {
         const { DeliverySchedule, Contacts, BillingAddress, ShippingAddress } = req.body || {};
-        const order = await this.service.createOrder(req.user, DeliverySchedule, Contacts, BillingAddress,  ShippingAddress);
+        const order = await this.service.createOrder(req.user, DeliverySchedule, Contacts, BillingAddress, ShippingAddress);
         res.status(200).json(order);
       } catch (e: any) {
         next(e);
@@ -132,10 +132,9 @@ export class shoppingApiController {
             orders = await this.service.getAdminOrders(page);
             break;
           case "Seller":
-            orders = await this.service.getSelleOrders(req.user, page);
+            orders = await this.service.getSellerOrders(req.user, page);
             break;
         }
-
         res.status(200).send(orders);
       } catch (e: any) {
         next(e);
@@ -148,6 +147,109 @@ export class shoppingApiController {
         const { Name, Global, Amount, ShippingType, Country, State, ZIP } = req.body || {};
         const shipping = await this.service.editShippings(id, Name, Global, Amount, ShippingType, Country, State, ZIP);
         res.status(200).json(shipping);
+      } catch (e: any) {
+        next(e);
+      }
+    });
+
+    this.app.put("/orders/status/:id", this.auth.checkAuth.bind(this.auth), this.auth.checkAdmin.bind(this.auth), async (req, res, next) => {
+      try {
+        const { id } = req.params || {};
+        const { StatusId } = req.body || {};
+        const order = await this.service.updateOrderStatus(id, StatusId);
+        res.status(200).json(order);
+      } catch (e: any) {
+        next(e);
+      }
+    });
+
+    this.app.put("/orders/ordershops/status/:id", this.auth.checkAuth.bind(this.auth), this.auth.checkSeller.bind(this.auth), async (req, res, next) => {
+      try {
+        const OrderId = req?.params?.id || "";
+        const { ShopId, StatusId } = req.body || {};
+        const order = await this.service.updateOrderShopStatus(OrderId, ShopId, StatusId);
+        res.status(200).json(order);
+      } catch (e: any) {
+        next(e);
+      }
+    });
+
+    this.app.put("/orders/deliverystate/:id", this.auth.checkAuth.bind(this.auth), this.auth.checkAdmin.bind(this.auth), async (req, res, next) => {
+      try {
+        const { id } = req.params || {};
+        const { ShopId, State, Message } = req.body || {};
+        const order = await this.service.updateOrderDeliveryState(id, ShopId, State, Message);
+        res.status(200).json(order);
+      } catch (e: any) {
+        next(e);
+      }
+    });
+    this.app.post("/orderstatus", this.auth.checkAuth.bind(this.auth), this.auth.checkAdmin.bind(this.auth), async (req, res, next) => {
+      try {
+        const { Name, Role, HasFail, FailName } = req.body || {};
+        const orderstatus = await this.service.createOrderStatus(Name, Role, HasFail, FailName);
+        res.status(200).json(orderstatus);
+      } catch (e: any) {
+        next(e);
+      }
+    });
+
+    this.app.get("/orderstatus", this.auth.checkAuth.bind(this.auth), this.auth.checkAdmin.bind(this.auth), async (req, res, next) => {
+      try {
+        const page = req.query?.page || "1";
+        const role = req.query?.role || "Admin";
+        const orderstatus = await this.service.getOrderStatus(Number.parseInt("" + page), "" + role);
+        res.status(200).json(orderstatus);
+      } catch (e: any) {
+        next(e);
+      }
+    });
+
+    this.app.get("/orderstatus/all", this.auth.checkAuth.bind(this.auth), async (req: any, res, next) => {
+      try {
+        const role = req.user.AccountType;
+        let orderstatus;
+        switch (role) {
+          case "Seller":
+            orderstatus = await this.service.getAllOrderStatus("Seller");
+            break;
+          case "Admin":
+            orderstatus = await this.service.getAllOrderStatus("Admin");
+          case "Client":
+            orderstatus = await this.service.getAllOrderStatus("Admin");
+        }
+        res.status(200).json(orderstatus);
+      } catch (e: any) {
+        next(e);
+      }
+    });
+
+    this.app.get("/orderstatus/:id", this.auth.checkAuth.bind(this.auth), this.auth.checkAdmin.bind(this.auth), async (req, res, next) => {
+      try {
+        const { id } = req.params || {};
+        const orderstatus = await this.service.getOrderStatusById(id);
+        res.status(200).json(orderstatus);
+      } catch (e: any) {
+        next(e);
+      }
+    });
+
+    this.app.delete("/orderstatus/:id", this.auth.checkAuth.bind(this.auth), this.auth.checkAdmin.bind(this.auth), async (req, res, next) => {
+      try {
+        const { id } = req?.params || {};
+        const orderstatus = await this.service.deleteOrderStatus("" + id);
+        res.status(200).json(orderstatus);
+      } catch (e: any) {
+        next(e);
+      }
+    });
+
+    this.app.put("/orderstatus/:id", this.auth.checkAuth.bind(this.auth), this.auth.checkAdmin.bind(this.auth), async (req, res, next) => {
+      try {
+        const id = req.params?.id || "";
+        const { Name, Serial, Role, Type } = req.body || {};
+        const orderstatus = await this.service.editOrderStatus(id, Name, Serial, Role, Type);
+        res.status(200).json(orderstatus);
       } catch (e: any) {
         next(e);
       }

@@ -11,13 +11,13 @@ function AttributesTable({ Attributes }: props) {
   const [Schema, setSchema] = useState(["ID", "Name", "Shop", "Value", "Actions"]);
   return (
     <div className=" h-min w-full shadow-md rounded-md ">
-      <div className="rounded-md overflow-clip shadow-sm border bg-gray-200/60">
+      <div className="rounded-md overflow-x-auto customscrollbar shadow-sm border bg-gray-200/60">
         <Table
           List={Attributes.map((v) => {
             return {
               ID: v._id,
               Name: v.Name,
-              Shop: v.Shop?.Name||"",
+              Shop: v.Shop?.Name || "",
               Value: v.AttributeValues.reduce((prev, curr) => prev + " , " + curr.Value, "").substring(3),
               Actions: (
                 <div className="flex justify-center">

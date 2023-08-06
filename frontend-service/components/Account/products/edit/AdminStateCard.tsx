@@ -20,7 +20,7 @@ const AdminStateCard = ({ State, setState, Message, setMessage,MessageLog}: prop
         </div>
         <div className="w-7/12 space-y-3">
           <div className="space-y-1">
-            <div className="text-gray-600">Choose Shop</div>
+            <div className="text-gray-600">Choose State</div>
             <div className="w-full">
               <DropList List={["Pending", "Rejected", "Approved"].map((state) => ({ Id: state, Name: state }))} Value={State} setValue={setState} />
             </div>

@@ -7,6 +7,7 @@ import Headder from "../../../components/layout/headder";
 import NavList from "../../../components/Account/NavList";
 import CreateShopHeadderCard from "../../../components/Account/shops/create/CreateShopHeadderCard";
 import ShopTable from "../../../components/Account/shops/ShopTable";
+import ShopHeadder from "../../../components/Account/shops/ShopHeadder";
 
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -35,11 +36,11 @@ const myshops = ({ shops }: { shops: ShopsType[] }) => {
     <div>
       <Headder />
       <div className="flex  mt-[60px]">
-        <div className="w-[350px] h-[calc(100vh-62px)] sticky top-[62px]">
+        <div className="w-[260px] h-[calc(100vh-60px)] sticky top-[60px]">
           <NavList />
         </div>
-        <div className=" w-full bg-gray-100   justify-between p-8 space-y-10">
-          <CreateShopHeadderCard />
+        <div className="  w-[calc(100%-260px)] bg-gray-100   justify-between p-8 space-y-10">
+          <ShopHeadder />
           <ShopTable shops={shops} />
         </div>
       </div>

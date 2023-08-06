@@ -9,6 +9,9 @@ import ProgressBar from "../../../components/Account/orders/orderdetails/compone
 import Headder from "../../../components/layout/headder";
 import { OrdersType } from "../../../types/OrdersType";
 import { ParseCookies } from "../../../utils/ParseCookies";
+import { useState } from "react";
+import { useAppSelector } from "../../../Redux/hooks";
+import { OrderStatusType } from "../../../types/OrderStatusType";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const cookies = ParseCookies(context.req.headers.cookie || "");
@@ -22,32 +25,37 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
   const id = context?.params?.id || "";
-  const [Order] = await Promise.all([await fetch("http://nginx-proxy/shopping-service/orders/" + id, { headers: { Authorization: cookies["jwt"] || "" } }).then((res) => res.json())]);
+
+  const [Order,OrderStatus] = await Promise.all([await fetch("http://nginx-proxy/shopping-service/orders/" + id, { headers: { Authorization: cookies["jwt"] || "" } }).then((res) => res.json()), await fetch("http://nginx-proxy/shopping-service/orderstatus/all", { headers: { Authorization: cookies["jwt"] || "" } }).then((res) => res.json())]);
   return {
     props: {
       Order,
+      OrderStatus,
       InitialState: store.getState(),
     },
   };
 };
 
-const MyOrdersCard = ({ Order }: { Order: OrdersType }) => {
-  console.log(Order)
+const MyOrdersCard = ({ Order ,OrderStatus }: { Order: OrdersType;OrderStatus:OrderStatusType[] }) => {
+  const [OrderState, setOrderState] = useState(Order);
+  const userInfo=useAppSelector(state=>state.userInfo.value);
   return (
-    <div>
+    <div className="">
       <Headder />
-      <div className="flex  mt-[60px]">
-        <div className="w-[260px] h-[calc(100vh-62px)] sticky top-[62px]">
+      <div className="flex  mt-[60px] ">
+        <div className="w-[260px] h-[calc(100vh-60px)] sticky top-[60px]">
           <NavList />
         </div>
         <div className="w-[calc(100%-260px)] bg-gray-100   justify-between p-8 space-y-10">
-          <OrderDetailsHedder order={Order} />
+          <OrderDetailsHedder order={OrderState} />
 
-          <div className="bg-white">
-            <OrderAddressAndDetails order={Order} />
-            <ProgressBar />
-          </div>
-          <ItemsList order={Order} />
+          {userInfo.AccountType === "Admin" && (
+            <div className="bg-white">
+              <OrderAddressAndDetails order={OrderState} />
+              <ProgressBar setOrder={setOrderState} Order={OrderState} OrderStatus={OrderStatus} />
+            </div>
+          )}
+          <ItemsList OrderStatus={OrderStatus} OrderState={OrderState} setOrderState={setOrderState} />
         </div>
       </div>
     </div>

@@ -30,7 +30,7 @@ const CartList = ({
   }, []);
   return (
     <div className="bg-black scroll bg-opacity-60 w-full h-screen fixed top-0 right-0 z-40 flex justify-end">
-      <div onAnimationEnd={Animationend} className={`bg-gray-100 shadow-xl border-[1px] border-gray-100 drop-shadow-xl  z-40  w-[350px] h-screen  origin-right ${cartListAnimation}`}>
+      <div onAnimationEnd={Animationend} className={`bg-gray-100 shadow-xl border-[1px] border-gray-100 drop-shadow-xl  z-40  w-[260px] h-screen  origin-right ${cartListAnimation}`}>
         <div className="flex items-center justify-between p-4 border-b-2 bg-white border-gray-300">
           <div onClick={() => setcartListAnimation("animate-growright")} className="rounded-full flex justify-center items-center m-2 bg-gradient-to-r from-indigo-600 to-blue-400  hover:from-red-400 hover:to-red-400 cursor-pointer w-8 h-8 drop-shadow-xl text-white">
             <i className="fa-regular fa-xmark"></i>

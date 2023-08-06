@@ -9,7 +9,7 @@ type props = {
 const ShopTable = ({ shops }: props) => {
   return (
     <div className=" h-min w-full shadow-md rounded-md ">
-      <div className="rounded-md overflow-clip shadow-sm border bg-gray-200/60">
+      <div className="rounded-md overflow-x-auto customscrollbar shadow-sm border bg-gray-200/60">
         <Table
           Schema={["Logo", "Name", "Owner Name", "Products", "Orders", "Status", "Actions"]}
           List={shops.map((shop) => {

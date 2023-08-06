@@ -34,10 +34,10 @@ function ShopInfo({ shop }:{shop:ShopsType}) {
     <div>
       <Headder />
       <div className="flex mt-[60px]">
-        <div className="w-[350px] h-[calc(100vh-62px)] sticky top-[62px]">
+        <div className="w-[260px] h-[calc(100vh-60px)] sticky top-[60px]">
           <NavList />
         </div>
-        <div className=" w-full  bg-gray-100 p-5   justify-between space-y-5">
+        <div className="  w-[calc(100%-260px)]  bg-gray-100 p-5   justify-between space-y-5">
           <div className="flex gap-4">
             <div className="w-1/4 drop-shadow-md ">
               <ShopInfoCard shop={shop} />

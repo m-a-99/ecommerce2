@@ -66,8 +66,8 @@ function index() {
   return (
     <div>
       <Headder />
-      <div className="flex  mt-[60px]">
-        <div className="w-[260px] h-[calc(100vh-62px)] sticky top-[62px]">
+      <div className="flex   mt-[60px] ">
+        <div className="w-[260px] h-[calc(100vh-60px)]  top-[60px] sticky">
           <NavList />
         </div>
         <div className="w-[calc(100%-260px)] bg-gray-100   justify-between p-8 space-y-10">

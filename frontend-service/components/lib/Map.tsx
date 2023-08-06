@@ -11,19 +11,23 @@ type props = {
 };
 const Map = ({ lat, setlat, lng, setlng, Location,cancel }: props) => {
   const [show, setshow] = useState(false);
-  const [marker, setmarker] = useState(Location);
+  const [marker, setmarker] = useState({lat,lng});
   const {isLoaded}=useLoadScript({
     googleMapsApiKey:""
   })
   useEffect(() => {
-    document.body.style.setProperty("overflow", "hidden");
-    setTimeout(() => {
-      setshow(true);
-    }, 500);
+        document.body.style.setProperty("overflow", "hidden");
+
+      setTimeout(() => {
+        if (marker?.lat !== undefined && marker?.lng !== undefined) {
+          setshow(true);
+        }
+      }, 500);
+  
     return () => {
       document.body.style.setProperty("overflow", "auto");
     };
-  }, []);
+  }, [marker]);
   const center = useRef(Location);
   function ok(){
     setlat(marker.lat)
@@ -44,9 +48,10 @@ const Map = ({ lat, setlat, lng, setlng, Location,cancel }: props) => {
                   lat: e.latLng?.lat() || Location.lat,
                   lng: e.latLng?.lng() || Location.lng,
                 });
+                  setshow(true);
               }}
             >
-              {show && <Marker position={marker} />}
+              {show && <Marker position={{lat:marker.lat||Location.lat,lng:marker.lng||Location.lng}} />}
             </GoogleMap>
           }
         </div>

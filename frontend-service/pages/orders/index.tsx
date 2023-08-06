@@ -22,15 +22,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
      },
    };
  }
-  const resData = await Promise.all([store.dispatch(FetchCart(cookies["jwt"] || "")),store.dispatch(FetchOrders(cookies["jwt"]))]);
+  const [OrderStatus] = await Promise.all([await fetch("http://nginx-proxy/shopping-service/orderstatus/all", { headers: { Authorization: cookies["jwt"] || "" } }).then((res) => res.json()), store.dispatch(FetchCart(cookies["jwt"] || "")), store.dispatch(FetchOrders(cookies["jwt"]))]);
   return {
     props: {
+      OrderStatus,
       InitialState: store.getState(),
     },
   };
 };
 
-const MyOrders = ({ InitialState }: any) => {
+const MyOrders = ({ InitialState, OrderStatus }: any) => {
   const navto = useRouter().push;
   useEffect(() => {
     if (!InitialState.userInfo.loading && InitialState.userInfo.error) {
@@ -44,11 +45,11 @@ const MyOrders = ({ InitialState }: any) => {
         <div className="relative">
           <Headder showLogOut={true} />
           <div className="flex w-full h-screen">
-            <div className="hidden md:block lg:block w-[260px] h-[calc(100vh-62px)] sticky top-[62px]">
+            <div className="hidden md:block lg:block w-[260px] h-[calc(100vh-60px)] sticky top-[60px]">
               <SettingLeftNavbar />
             </div>
             <div className="bg-gray-100 h-full w-[calc(100%-260px)] px-10 py-10 mt-10">
-              <MyOrdersCard />
+              <MyOrdersCard OrderStatus={OrderStatus} />
             </div>
           </div>
           <div className="md:hidden lg:hidden w-full fixed bottom-0">

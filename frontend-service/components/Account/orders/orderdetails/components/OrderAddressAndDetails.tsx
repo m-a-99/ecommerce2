@@ -32,7 +32,7 @@ const OrderAddressAndDetails = ({order}:props) => {
           <div className="pr-2">
             <div className="space-y-3 overflow-y-auto customscrollbar max-h-[250px]">
               {order.Contacts.map((contact) => (
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500" key={contact._id}>
                   <div className="text-gray-500 font-semibold truncate ">{contact?.Title}</div>
                   <div className="truncate">{contact.Value}</div>
                 </div>

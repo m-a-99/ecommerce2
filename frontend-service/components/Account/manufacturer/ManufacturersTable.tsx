@@ -11,7 +11,7 @@ function ManufacturersTable({ Manufacturers }: props) {
   const [Schema, setSchema] = useState(["ID", "Logo", "Name", "Actions"]);
   return (
     <div className=" h-min w-full shadow-md rounded-md ">
-      <div className="rounded-md overflow-clip shadow-sm border bg-gray-200/60">
+      <div className="rounded-md overflow-x-auto customscrollbar shadow-sm border bg-gray-200/60">
         <Table
           List={Manufacturers.map((v) => {
             return {

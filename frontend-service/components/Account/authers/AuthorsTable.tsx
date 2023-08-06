@@ -12,14 +12,14 @@ function AuthorsTable({ Authors }: props) {
   const [Schema, setSchema] = useState(["ID", "Image", "Name", "Actions"]);
   return (
     <div className=" h-min w-full shadow-md rounded-md ">
-      <div className="rounded-md overflow-clip shadow-sm border bg-gray-200/60">
+      <div className="rounded-md overflow-x-auto customscrollbar shadow-sm border bg-gray-200/60">
         <Table
           List={Authors.map((v) => {
             return {
               ID: v._id,
-              Image: v.Image&&<Image width={30} height={30} alt="icon" src={"http://nginx-proxy" + v.Image} />,
+              Image: v.Image && <Image width={30} height={30} alt="icon" src={"http://nginx-proxy" + v.Image} />,
               Name: v.Name,
-              Actions:(
+              Actions: (
                 <div className="flex justify-center">
                   <div className="w-full">
                     <Link href={`authors/edit/${v._id}`}>

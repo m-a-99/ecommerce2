@@ -79,10 +79,10 @@ const create = ({ Groups, Icons, Tag }: { Groups: GroupsType; Icons: IconsType; 
     <div>
       <Headder />
       <div className="flex  mt-[60px]">
-        <div className="w-[350px] h-[calc(100vh-62px)] sticky top-[62px]">
+        <div className="w-[260px] h-[calc(100vh-60px)] sticky top-[60px]">
           <NavList />
         </div>
-        <div className="bg-gray-100 w-full p-10 ">
+        <div className=" w-[calc(100%-260px)] bg-gray-100  p-10 ">
           <form className="space-y-10">
             <EditTagHeadderCard />
             <GeneralInfoCard Icons={Icons} Groups={Groups} Name={Name} setName={setName} Icon={Icon} setIcon={setIcon} Details={Details} setDetails={setDetails} Group={Group} setGroup={setGroup} />

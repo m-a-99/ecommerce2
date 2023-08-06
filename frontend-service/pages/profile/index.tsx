@@ -44,7 +44,7 @@ const Profile = ({ InitialState }:any) => {
           <Headder showLogOut={true} />
 
           <div className="flex ">
-            <div className="hidden md:block lg:block w-[350px] h-[calc(100vh-62px)] sticky top-[62px]">
+            <div className="hidden md:block lg:block w-[260px] h-[calc(100vh-60px)] sticky top-[60px]">
               <SettingLeftNavbar />
             </div>
 

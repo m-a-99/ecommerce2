@@ -114,7 +114,7 @@ const NavList = () => {
       </Link>
 
       {userInfo.AccountType === "Admin" && (
-        <Link href="/account/order">
+        <Link href="/account/orderstatus">
           <div className="space-x-2 cursor-pointer select-none transition  ease-in-out hover:bg-indigo-500 hover:text-white  h-12  bg-white items-center flex p-4">
             <i className="far fa-flag-swallowtail"></i>
             <span>Order Status</span>
@@ -190,7 +190,6 @@ const NavList = () => {
           <span>Settings</span>
         </div>
       </Link>
-
     </div>
   );
 };

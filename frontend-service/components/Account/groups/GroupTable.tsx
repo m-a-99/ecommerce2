@@ -12,14 +12,19 @@ const GroupTable = ({ Groups }:props) => {
 
   return (
     <div className=" h-min w-full shadow-md rounded-md ">
-      <div className="rounded-md overflow-clip shadow-sm border bg-gray-200/60">
-        <Table List={Groups.map(v=>{
-          return {
-            ID: v._id,
-            Name: v.Name,
-            Icon: <Image width={20} height={20} alt="icon" src={"http://nginx-proxy" + v.Icon} />,
-          };
-        })as any} Schema={Schema} />
+      <div className="rounded-md overflow-x-auto customscrollbar shadow-sm border bg-gray-200/60">
+        <Table
+          List={
+            Groups.map((v) => {
+              return {
+                ID: v._id,
+                Name: v.Name,
+                Icon: <Image width={20} height={20} alt="icon" src={"http://nginx-proxy" + v.Icon} />,
+              };
+            }) as any
+          }
+          Schema={Schema}
+        />
       </div>
     </div>
   );

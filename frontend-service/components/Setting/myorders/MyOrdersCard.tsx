@@ -2,10 +2,11 @@ import { useState } from "react";
 import OrderDetailsCard from "./components/orderdetails/OrderDetailsCard";
 import OrdersList from "./components/orderlist/OrdersList";
 import { useAppSelector } from "../../../Redux/hooks";
+import { OrderStatusType } from "../../../types/OrderStatusType";
 
-
-const MyOrdersCard = () => {
-const [order_details_id, setorder_details_id] = useState<null|string>(null);
+type props = { OrderStatus: OrderStatusType[] };
+const MyOrdersCard = ({ OrderStatus }:props) => {
+  const [order_details_id, setorder_details_id] = useState<null | string>(null);
 
   return (
     <div className="space-y-10 h-full w-full ">
@@ -14,7 +15,7 @@ const [order_details_id, setorder_details_id] = useState<null|string>(null);
           <OrdersList setorder_details_id={setorder_details_id} />
         </div>
         <div className="w-[65%]">
-          <OrderDetailsCard order_details_id={order_details_id} />
+          <OrderDetailsCard OrderStatus={OrderStatus} order_details_id={order_details_id} />
         </div>
       </div>
     </div>
