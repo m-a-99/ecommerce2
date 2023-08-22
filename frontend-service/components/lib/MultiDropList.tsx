@@ -7,22 +7,25 @@ type props = {
 };
 
 function MultiDropList({ List, Value, setValue }: props) {
+  const [hover, sethover] = useState(-1);
+
   const [inputval, setinputval] = useState("");
   const [ShowList, setShowList] = useState(false);
   const [ListState, setListState] = useState(List);
   const [ValueState, setValueState] = useState(List.filter((v) => Value.includes(v.Id)));
   const inputref = useRef<HTMLInputElement | null>(null);
   const DropRef = useRef<HTMLDivElement | null>(null);
-    useEffect(() => {
-      function handle(e: any) {
-        if (DropRef.current && DropRef.current?.contains(e.target as any)) return;
-        setShowList(false);
-      }
-      document.addEventListener("click", handle);
-      return () => {
-        document.removeEventListener("click", handle);
-      };
-    }, []);
+  useEffect(() => {
+    function handle(e: any) {
+      if (DropRef.current && DropRef.current?.contains(e.target as any)) return;
+      setShowList(false);
+      sethover(-1);
+    }
+    document.addEventListener("click", handle);
+    return () => {
+      document.removeEventListener("click", handle);
+    };
+  }, []);
   const [focus, setfocus] = useState(false);
   useEffect(() => {
     if (ValueState) {
@@ -31,9 +34,8 @@ function MultiDropList({ List, Value, setValue }: props) {
   }, [ValueState]);
 
   useEffect(() => {
-    setListState(List.filter((listvalue) => (inputval ? listvalue.Name.toLocaleLowerCase().includes(inputval.toLocaleLowerCase()) : true)&&(!Value.includes(listvalue.Id))));
-  }, [inputval, List,Value]);
-
+    setListState(List.filter((listvalue) => (inputval ? listvalue.Name.toLocaleLowerCase().includes(inputval.toLocaleLowerCase()) : true) && !Value.includes(listvalue.Id)));
+  }, [inputval, List, Value]);
 
   function onclick() {
     !focus && inputref.current?.focus();
@@ -43,6 +45,8 @@ function MultiDropList({ List, Value, setValue }: props) {
     setinputval("");
     setValueState((l) => [...l, v]);
     setShowList(false);
+    sethover(-1);
+
     !focus && inputref.current?.focus();
   }
   function deleteValue(val: { Id: string; Name: string }) {
@@ -75,7 +79,17 @@ function MultiDropList({ List, Value, setValue }: props) {
             <input
               ref={inputref}
               value={inputval}
-              onKeyDown={(e) => console.log(e)}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowDown") {
+                  sethover((h) => (h === -1 ? 0 : (h + 1) % ListState.length));
+                } else if (e.key === "ArrowUp") {
+                  sethover((h) => (h === -1 || h === 0 ? ListState.length - 1 : h - 1));
+                } else if (e.key === "Enter") {
+                  if (hover > -1) {
+                    choose(ListState[hover]);
+                  }
+                }
+              }}
               onFocus={onfocus}
               onChange={(e) => {
                 setinputval(e.target.value);
@@ -93,9 +107,9 @@ function MultiDropList({ List, Value, setValue }: props) {
       <div className="relative">
         {ShowList && (
           <div onClick={(e) => e.stopPropagation()} className={` z-10 absolute  top-[7px] overscroll-contain rounded-md border-gray-300 border w-full bg-white drop-shadow-md overflow-auto max-h-[250px] py-2`}>
-            {ListState.map((v) => (
+            {ListState.map((v, index) => (
               <div onClick={() => choose(v)} key={v.Id} className="hover:bg-gray-100 cursor-pointer select-none">
-                <div className="p-3 text-gray-500 border-b ">{v.Name}</div>
+                <div className={`${index===hover?"bg-gray-100":""} p-3 text-gray-500 border-b `}>{v.Name}</div>
               </div>
             ))}
             {ListState.length == 0 && (

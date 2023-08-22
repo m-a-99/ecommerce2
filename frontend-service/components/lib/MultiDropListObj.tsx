@@ -7,6 +7,8 @@ type props = {
 };
 
 function MultiDropListObj({ List, Value, setValue }: props) {
+  const [hover, sethover] = useState(-1);
+
   const [inputval, setinputval] = useState("");
   const [ShowList, setShowList] = useState(false);
   //const [MouseOver, setMouseOver] = useState(false);
@@ -25,6 +27,7 @@ function MultiDropListObj({ List, Value, setValue }: props) {
     function handle(e: any) {
       if (DropRef.current && DropRef.current?.contains(e.target as any)) return;
       setShowList(false);
+      sethover(-1);
     }
     document.addEventListener("click", handle);
     return () => {
@@ -58,6 +61,7 @@ function MultiDropListObj({ List, Value, setValue }: props) {
     setinputval("");
     setValue((l) => [...l, v]);
     setShowList(false);
+    sethover(-1)
     !focus && inputref.current?.focus();
   }
   function deleteValue(val: { Id: string; Name: string }) {
@@ -96,6 +100,18 @@ function MultiDropListObj({ List, Value, setValue }: props) {
             <input
               ref={inputref}
               //onBlur={onblur}
+
+              onKeyDown={(e) => {
+                if (e.key === "ArrowDown") {
+                  sethover((h) => (h === -1 ? 0 : (h + 1) % ListState.length));
+                } else if (e.key === "ArrowUp") {
+                  sethover((h) => (h === -1 || h === 0 ? ListState.length - 1 : h - 1));
+                } else if (e.key === "Enter") {
+                  if (hover > -1) {
+                    choose(ListState[hover]);
+                  }
+                }
+              }}
               value={inputval}
               onFocus={onfocus}
               onChange={(e) => {
@@ -114,9 +130,9 @@ function MultiDropListObj({ List, Value, setValue }: props) {
       <div className="relative">
         {ShowList && (
           <div onClick={(e) => e.stopPropagation()} className={` z-10 absolute  top-[7px] overscroll-contain rounded-md border-gray-300 border w-full bg-white drop-shadow-md overflow-auto max-h-[250px] py-2`}>
-            {ListState.map((v) => (
+            {ListState.map((v,index) => (
               <div onClick={() => choose(v)} key={v.Id} className="hover:bg-gray-100 cursor-pointer select-none">
-                <div className="p-3 text-gray-500 border-b ">{v.Name}</div>
+                <div className={`${hover===index?"bg-gray-100":""} p-3 text-gray-500 border-b`}>{v.Name}</div>
               </div>
             ))}
             {ListState.length == 0 && (

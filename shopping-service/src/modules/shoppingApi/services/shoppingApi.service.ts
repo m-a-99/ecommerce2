@@ -116,8 +116,8 @@ export class shoppingApiService {
   async getAdminOrders(Page: number) {
     return await this.repository.getAdminOrders(Page, 4);
   }
-  async getSellerOrders(User: any, Page: number) {
-    const Shops: any = await this.shops_service.getShopsbyOwners([User._id]);
+  async getSellerOrders(UserId: string, Page: number) {
+    const Shops: any = await this.shops_service.getShopsbyOwners([UserId]);
 
     return await this.repository.getSellerOrders(
       Object.values(Shops).map((shop: any) => shop._id),
@@ -130,13 +130,13 @@ export class shoppingApiService {
     const Ids = order.OrderShops.map((v: any) => "" + v.ShopOrderStatus);
     const OrderStatusList = await this.repository.getOrderStatusByIds(Ids);
     const OrderStatusObj = ArrToObj(OrderStatusList, "_id");
-    const shops: any = (await this.shops_service.getShopsByIds(order.OrderShops.map((v: any) => "" + v.ShopId))) || {};
+    const [shops, users]: any[] = await Promise.all([this.shops_service.getShopsByIds(order.OrderShops.map((v: any) => "" + v.ShopId)), this.users_service.getUser([order.UserId])]);
+    order.User = users[order.UserId];
     order.OrderShops = order.OrderShops.map((v: any) => ({
       ...v,
       ShopOrderStatus: OrderStatusObj["" + v.ShopOrderStatus],
       Shop: shops["" + v.ShopId],
     })) as any;
-    console.log(Ids, OrderStatusList, OrderStatusObj, order);
     return order;
     // order.fore
   }
@@ -144,9 +144,7 @@ export class shoppingApiService {
   async getSellerOrderbyId(User: any, Id: string) {
     const Shops: any = await this.shops_service.getShopsbyOwners([User._id]);
     const shopsids = Object.values(Shops).map((shop: any) => shop._id);
-
     const order = await this.repository.getSellerOrderbyId(shopsids, Id);
-
     const Ids = order.OrderShops.map((v) => "" + v.ShopOrderStatus);
     const OrderStatusList = await this.repository.getOrderStatusByIds(Ids);
     const OrderStatusObj = ArrToObj(OrderStatusList, "_id");
@@ -157,12 +155,10 @@ export class shoppingApiService {
       Shop: Shops["" + v.ShopId],
       ShopOrderStatus: OrderStatusObj["" + v.ShopOrderStatus],
     })) as any;
-
-    return { _id: order._id, OrderShops: order.OrderShops, createdAt: order.createdAt, updatedAt: order.updatedAt };
-    // order.fore
+    return { _id: order._id, OrderShops: order.OrderShops, createdAt: (order as any).createdAt, updatedAt: (order as any).updatedAt };
   }
-  async getClientOrders(user: any, Page: number) {
-    return await this.repository.getClientOrders(user._id, Page, 4);
+  async getClientOrders(UserId: string, Page: number) {
+    return await this.repository.getClientOrders(UserId, Page, 4);
   }
 
   async getShippings(Page: number) {

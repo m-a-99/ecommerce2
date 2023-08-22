@@ -297,20 +297,27 @@ export class ShoppingRepository {
 
   async getClientOrders(UserId: string, Page: number, Limit: number) {
     try {
-      const orders = await OrdersModel.aggregate([
-        {
-          $lookup: {
-            from: "OrderStatus",
-            localField: "Status",
-            foreignField: "_id",
-            as: "Status",
-          },
+      return this.Pageination2(
+        async () => {
+          const count = await OrdersModel.countDocuments({ UserId: new mongoose.Types.ObjectId(UserId) });
+          const query = OrdersModel.aggregate([
+            { $match: { UserId: new mongoose.Types.ObjectId(UserId) } },
+            {
+              $lookup: {
+                from: "OrderStatus",
+                localField: "Status",
+                foreignField: "_id",
+                as: "Status",
+              },
+            },
+            { $unwind: "$Status" },
+          ]);
+          return { count, query };
         },
-        { $unwind: "$Status" },
-        { $sort: { createdAt: -1 } },
-      ]);
-      //.sort({ createdAt: -1 });
-      return this.Pageination(orders, Page, Limit);
+        Page,
+        Limit,
+        (collection) => collection.sort({ createdAt: -1 })
+      );
     } catch (e: any) {
       throw new APIError("get Order error");
     }

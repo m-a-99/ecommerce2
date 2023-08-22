@@ -22,7 +22,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
      },
    };
  }
-  const [OrderStatus] = await Promise.all([await fetch("http://nginx-proxy/shopping-service/orderstatus/all", { headers: { Authorization: cookies["jwt"] || "" } }).then((res) => res.json()), store.dispatch(FetchCart(cookies["jwt"] || "")), store.dispatch(FetchOrders(cookies["jwt"]))]);
+  const [OrderStatus] = await Promise.all(
+    [ 
+    fetch("http://nginx-proxy/shopping-service/orderstatus/all", { headers: { Authorization: cookies["jwt"] || "" } }).then((res) => res.json()), 
+    store.dispatch(FetchCart(cookies["jwt"] || "")), 
+    store.dispatch(FetchOrders(cookies["jwt"]))
+    ]
+  );
   return {
     props: {
       OrderStatus,

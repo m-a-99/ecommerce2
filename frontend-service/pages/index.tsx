@@ -4,13 +4,11 @@ import BannersCard from "../components/Home/BannersCard";
 import FilterCard from "../components/Home/FilterCard";
 import ProductsList from "../components/Home/products/ProductsList";
 import Headder from "../components/layout/headder";
-import { FetchCart, } from "../Redux/cart";
-import { FetchUserInfo, } from "../Redux/userInfo";
+import { FetchCart } from "../Redux/cart";
+import { FetchUserInfo } from "../Redux/userInfo";
 import { ParseCookies } from "../utils/ParseCookies";
 import { store } from "../Redux/store";
 import { FetchProducts } from "../Redux/products";
-import { useAppSelector } from "../Redux/hooks";
-import { useEffect } from "react";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const cookies = ParseCookies(context.req.headers.cookie || "");
@@ -31,7 +29,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 const Home = ({InitialState, categories, }: any) => {
   console.log(InitialState?.userInfo.value.AccountType, InitialState?.userInfo.value.AccountType === "Client");
   return (
-    !["Admin", "Seller"].includes(store.getState().userInfo.value?.AccountType || "") && (
+    !["Admin", "SubAdmin", "SubSeller", "Seller"].includes(store.getState().userInfo.value?.AccountType || "") && (
       <div className="min-h-screen">
         <Head>
           <title>Home</title>

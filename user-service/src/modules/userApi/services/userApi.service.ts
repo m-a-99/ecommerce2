@@ -1,9 +1,9 @@
 import { UserRepository } from "../../../database";
+import { UsersModel } from "../../../database/models";
 import { filesService } from "../../../services/files.service";
 import { comparehash, generateJwtToken, hash, verify_token } from "../../../utils";
-import { BadRequestError, ValidationError } from "../../../utils/app-errors";
+import { APIError, BadRequestError, ValidationError } from "../../../utils/app-errors";
 import { userApiRemoteService } from "./userApi.remote.service";
-
 
 type Feilds = {
   Fields: { name: string; maxCount: number }[];
@@ -17,7 +17,7 @@ export class userApiService {
 
   async signin(Email: string, Password: string) {
     await this.validateSignin(Email, Password);
-    
+
     const user: any = await this.repository.getUserByEmail(Email);
 
     if (!user) {
@@ -38,6 +38,22 @@ export class userApiService {
     const user: any = await this.repository.createUser(FirstName, LastName, Email, AccountType, PasswordHash);
     const token = generateJwtToken(user._id);
     return token;
+  }
+
+  async CreateSubAdmin(FirstName: string, LastName: string, Email: string, AccountType: string, Password: string, ConfirmationPassword: string) {
+    await this.#CreateSubAdminValidation(FirstName, LastName, Email, AccountType, Password, ConfirmationPassword);
+    const PasswordHash = hash(Password);
+    const user: any = await this.repository.createUser(FirstName, LastName, Email, AccountType, PasswordHash);
+    // const token = generateJwtToken(user._id);
+    return user;
+  }
+
+  async CreateSubSeller(FirstName: string, LastName: string, Email: string, AccountType: string, Password: string, ConfirmationPassword: string) {
+    await this.#CreateSubSellerValidation(FirstName, LastName, Email, AccountType, Password, ConfirmationPassword);
+    const PasswordHash = hash(Password);
+    const user: any = await this.repository.createUser(FirstName, LastName, Email, AccountType, PasswordHash);
+    // const token = generateJwtToken(user._id);
+    return user;
   }
 
   async ResolveUserByToken(token: string) {
@@ -64,6 +80,30 @@ export class userApiService {
     return await this.repository.DeleteAddress(UserId, AddressType);
   }
 
+  async updateStatus(UserId: string, Status: string, Message: string) {
+    return await this.repository.updateStatus(UserId, Status, Message);
+  }
+
+  async addSubAdmin(FirstName:string, LastName:string, Email:string, Password:string,Img:string) {
+    try{
+      const PasswordHash = hash(Password);
+      const user = new UsersModel({
+        AccountType:"SubAdmin",
+        FirstName,
+        LastName,
+        Email,
+        Password: PasswordHash,
+        Img
+      });
+      await user.save();
+      const res:any=user.toObject()
+      delete res.Password
+      return res;
+    }catch(e:any){
+      throw new APIError(e.message)
+    }
+  }
+
   async ChangePassword(UserId: string, OldPassword: string, NewPassword: string, ConfirmationPassword: string) {
     await this.#validatePassword(NewPassword, ConfirmationPassword);
     const user = await this.repository.GetUserById(UserId);
@@ -76,6 +116,80 @@ export class userApiService {
     return { ok: true, message: "password changed successfuly" };
   }
 
+  /*****************************************************************************/
+  async getUsers(Role: string, Page: number) {
+    return await this.repository.getUsers(Role, Page, 5);
+  }
+  /*****************************************************************************/
+  async getUserById(UserId: string) {
+    return await this.repository.getUserById(UserId);
+  }
+  async #CreateSubAdminValidation(FirstName: string, LastName: string, Email: string, AccountType: string, Password: string, ConfirmationPassword: string) {
+    let err: any = {};
+    if (!FirstName) {
+      err["FirstName"] = "First Name Required";
+    }
+    if (!LastName) {
+      err["LastName"] = "Last Name Required";
+    }
+    if (!Email || !Email.includes("@") || Email.split("@").length !== 2) {
+      err["Email"] = "Invalid Email";
+    } else {
+      const _user = await this.repository.getUserByEmail(Email);
+      if (_user) {
+        err["Email"] = "This Email Is Used By Another Account";
+      }
+    }
+    if (AccountType !== "SubAdmin") {
+      if (!AccountType) {
+        err["AccountType"] = "Account Type Requried";
+      } else {
+        err["AccountType"] = "Invalid Account Type";
+      }
+    }
+    if (!Password || Password.length < 6) {
+      err["Password"] = "Password Must Be More Then 6 Characters";
+    }
+    if (!Password || !ConfirmationPassword || Password !== ConfirmationPassword) {
+      err["ConfirmationPassword"] = "Confirmation Password Do Not Match Password";
+    }
+    if (Object.keys(err).length > 0) {
+      throw new ValidationError(JSON.stringify(err));
+    }
+  }
+  async #CreateSubSellerValidation(FirstName: string, LastName: string, Email: string, AccountType: string, Password: string, ConfirmationPassword: string) {
+    let err: any = {};
+    if (!FirstName) {
+      err["FirstName"] = "First Name Required";
+    }
+    if (!LastName) {
+      err["LastName"] = "Last Name Required";
+    }
+    if (!Email || !Email.includes("@") || Email.split("@").length !== 2) {
+      err["Email"] = "Invalid Email";
+    } else {
+      const _user = await this.repository.getUserByEmail(Email);
+      if (_user) {
+        err["Email"] = "This Email Is Used By Another Account";
+      }
+    }
+    if (AccountType !== "SubSeller") {
+      if (!AccountType) {
+        err["AccountType"] = "Account Type Requried";
+      } else {
+        err["AccountType"] = "Invalid Account Type";
+      }
+    }
+    if (!Password || Password.length < 6) {
+      err["Password"] = "Password Must Be More Then 6 Characters";
+    }
+    if (!Password || !ConfirmationPassword || Password !== ConfirmationPassword) {
+      err["ConfirmationPassword"] = "Confirmation Password Do Not Match Password";
+    }
+    if (Object.keys(err).length > 0) {
+      throw new ValidationError(JSON.stringify(err));
+    }
+  }
   async #validateSignup(FirstName: string, LastName: string, Email: string, AccountType: string, Password: string, ConfirmationPassword: string) {
     let err: any = {};
     if (!FirstName) {

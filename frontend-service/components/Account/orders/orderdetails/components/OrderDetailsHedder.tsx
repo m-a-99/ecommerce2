@@ -8,10 +8,10 @@ type props = {
 const OrderDetailsHedder = ({ order }: props) => {
   const [date, setdate] = useState("");
   useEffect(() => {
-    setdate(new Date(order.createdAt).toLocaleString("EN-GB", { hour12: true }));
+    setdate(new Date(order?.createdAt).toLocaleString("EN-GB", { hour12: true }));
   }, []);
   return (
-    <div className="p-5 py-10 items-start bg-white rounded-md flex justify-between border-b-[1px] border-gray-300  ">
+    <div className="p-5 py-10 items-start bg-white  flex justify-between border-b-[1px] border-gray-300  ">
       <div>
         <div className="text-lg text-zinc-700 font-semibold">Order Details - {order?._id}</div>
         <div className="text-gray-500 ">{date}</div>

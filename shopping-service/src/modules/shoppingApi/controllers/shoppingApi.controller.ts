@@ -75,7 +75,7 @@ export class shoppingApiController {
 
     this.app.get("/shippings", this.auth.checkAuth.bind(this.auth), this.auth.checkAdmin.bind(this.auth), async (req, res, next) => {
       try {
-        const page = Number.parseInt((req?.query?.page as string) || "1");
+        const page = Number.parseInt("" + req?.query?.page || "1");
         const shippings = await this.service.getShippings(page);
         res.status(200).json(shippings);
       } catch (e: any) {
@@ -97,6 +97,18 @@ export class shoppingApiController {
         const { Name, Global, Amount, ShippingType, Country, State, ZIP } = req.body || {};
         const shipping = await this.service.createShipping(Name, Global, Amount, ShippingType, Country, State, ZIP);
         res.status(200).json(shipping);
+      } catch (e: any) {
+        next(e);
+      }
+    });
+
+    this.app.get("/userorders/:id", this.auth.checkAuth.bind(this.auth), this.auth.checkAdmin.bind(this.auth), async (req: any, res, next) => {
+      try {
+        const page = Number.parseInt(req?.query?.page || "1");
+        const id =req?.params?.id||""
+        const orders = await this.service.getClientOrders(id, page);
+        console.log(orders)
+        res.status(200).json(orders);
       } catch (e: any) {
         next(e);
       }
@@ -126,13 +138,13 @@ export class shoppingApiController {
         const page = req?.query?.page || 1;
         switch (req?.user?.AccountType) {
           case "Client":
-            orders = await this.service.getClientOrders(req.user, page);
+            orders = await this.service.getClientOrders(req.user._id, page);
             break;
           case "Admin":
             orders = await this.service.getAdminOrders(page);
             break;
           case "Seller":
-            orders = await this.service.getSellerOrders(req.user, page);
+            orders = await this.service.getSellerOrders(req.user._id, page);
             break;
         }
         res.status(200).send(orders);

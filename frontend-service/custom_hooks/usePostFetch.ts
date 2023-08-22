@@ -1,4 +1,3 @@
-import { OutgoingHttpHeader } from "http";
 import { useEffect, useRef, useState } from "react";
 import Cookies from "universal-cookie";
 const usePostFetch = () => {

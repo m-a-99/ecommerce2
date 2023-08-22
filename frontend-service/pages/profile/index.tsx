@@ -13,7 +13,7 @@ import SettingBottomNavbar from "../../components/layout/SettingBottomNavbar";
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const cookies = ParseCookies(context.req.headers.cookie || "");
   await store.dispatch(FetchUserInfo(cookies["jwt"] || ""));
-  if (["Admin", "Seller"].includes(store.getState().userInfo.value?.AccountType || "")) {
+  if (["Admin", "SubAdmin", "SubSeller", "Seller"].includes(store.getState().userInfo.value?.AccountType || "")) {
     return {
       redirect: {
         permanent: true,
@@ -26,11 +26,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     props: {
       InitialState: store.getState(),
     },
-    
   };
 };
 
-const Profile = ({ InitialState }:any) => {
+const Profile = ({ InitialState }: any) => {
   const navto = useRouter().push;
   useEffect(() => {
     if (!InitialState.userInfo.loading && InitialState.userInfo.error) {
@@ -42,12 +41,10 @@ const Profile = ({ InitialState }:any) => {
       {!InitialState.userInfo.loading && !InitialState.userInfo.error && (
         <div className="relative">
           <Headder showLogOut={true} />
-
           <div className="flex ">
             <div className="hidden md:block lg:block w-[260px] h-[calc(100vh-60px)] sticky top-[60px]">
               <SettingLeftNavbar />
             </div>
-
             <div className="bg-gray-100 w-full p-10 ">
               <div className=" py-10 lg:px-12 md:px-12">
                 <ProfileCard />

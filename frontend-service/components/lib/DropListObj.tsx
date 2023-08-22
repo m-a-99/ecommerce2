@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 
 type props = {
-  List: { Id: string; Name: string; }[];
-  Value: { Id: string; Name: string; };
-  setValue: (v: { Id: string; Name: string; }) => void;
+  List: { Id: string; Name: string }[];
+  Value: { Id: string; Name: string };
+  setValue: (v: { Id: string; Name: string }) => void;
 };
 
 function DropListObj({ List, Value, setValue }: props) {
+  const [hover, sethover] = useState(-1);
+
   const [inputval, setinputval] = useState("");
   const [ShowList, setShowList] = useState(false);
   const [ListState, setListState] = useState(List);
@@ -17,30 +19,34 @@ function DropListObj({ List, Value, setValue }: props) {
     function handle(e: any) {
       if (DropRef.current && DropRef.current?.contains(e.target as any)) return;
       setShowList(false);
+      sethover(-1);
     }
+
     document.addEventListener("click", handle);
     return () => {
       document.removeEventListener("click", handle);
     };
   }, []);
+
   useEffect(() => {
     if (ValueState.Id) {
-      setValue({...ValueState});
+      setValue({ ...ValueState });
     }
   }, [ValueState]);
 
-  useEffect(()=>{
+  useEffect(() => {
     setListState(List.filter((listvalue) => (inputval ? listvalue.Name.toLocaleLowerCase().includes(inputval.toLocaleLowerCase()) : true)));
-  },[inputval,List])
+  }, [inputval, List]);
 
-  
-  function onclick(){
+  function onclick() {
     setShowList((v) => !v);
   }
-  function choose(v: { Id: string; Name: string;}) {
+  
+  function choose(v: { Id: string; Name: string }) {
     setinputval("");
     setValueState(v);
     setShowList(false);
+    sethover(-1);
   }
   return (
     <div className="relative" ref={DropRef}>
@@ -50,6 +56,17 @@ function DropListObj({ List, Value, setValue }: props) {
         </div>
         <input
           value={inputval}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowDown") {
+              sethover((h) => (h === -1 ? 0 : (h + 1) % ListState.length));
+            } else if (e.key === "ArrowUp") {
+              sethover((h) => (h === -1 || h === 0 ? ListState.length - 1 : h - 1));
+            } else if (e.key === "Enter") {
+              if (hover > -1) {
+                choose(ListState[hover]);
+              }
+            }
+          }}
           onChange={(e) => {
             setinputval(e.target.value);
             setShowList(true);

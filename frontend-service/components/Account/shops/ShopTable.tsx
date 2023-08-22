@@ -19,7 +19,7 @@ const ShopTable = ({ shops }: props) => {
               "Owner Name": `${shop.Owner.FirstName} ${shop.Owner.LastName}`,
               Products: shop.ProductsCount,
               Orders: 0,
-              Status: <div className="flex justify-center">{shop.Active ? <div className="px-3 rounded-full bg-green-500 text-white text-center">A ctive</div> : <div className="px-3 rounded-full bg-red-500 text-white text-center">Inactive</div>}</div>,
+              Status: <div className="flex justify-center">{shop.Active ? <div className="w-[70px] h-7 flex justify-center items-center rounded-full bg-green-500 text-white text-center">Active</div> : <div className="w-[70px]  h-7 flex justify-center items-center rounded-full bg-red-500 text-white text-center">Inactive</div>}</div>,
               Actions: (
                 <div className="flex justify-center">
                   <div className="w-full">

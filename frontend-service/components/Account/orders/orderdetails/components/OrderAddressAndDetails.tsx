@@ -1,4 +1,3 @@
-import { useAppSelector } from "../../../../../Redux/hooks";
 import { OrdersType } from "../../../../../types/OrdersType";
 
 type props={
@@ -6,9 +5,25 @@ type props={
 }
 
 const OrderAddressAndDetails = ({order}:props) => {
+  console.log(order)
   return (
     <div className="p-5  bg-white grid grid-cols-12 border-b-[1px] gap-5 border-gray-300 ">
-      <div className="col-span-5 border-r-[1px] space-y-2  border-gray-300">
+      <div className="col-span-3 border-r-[1px] space-y-2  border-gray-300">
+        <div>
+          <div className="font-semibold text-zinc-700 ">Client Info</div>
+          <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500">
+              <div className="text-gray-500 font-semibold truncate ">Id :</div>
+              <div className="truncate">{order.UserId}</div>
+              <div className="text-gray-500 font-semibold truncate ">Name :</div>
+              <div className="truncate">{order?.User?.FirstName + " " + order?.User?.LastName}</div>
+              <div className="text-gray-500 font-semibold truncate ">Email :</div>
+              <div className="truncate">{order?.User?.Email}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="col-span-4 border-r-[1px] space-y-2  border-gray-300">
         <div>
           <div className="font-semibold text-zinc-700 ">Shipping Address</div>
           <div className="text-sm text-gray-500">
@@ -26,7 +41,7 @@ const OrderAddressAndDetails = ({order}:props) => {
           </div>
         </div>
       </div>
-      <div className="col-span-3 border-r-[1px] space-y-2  border-gray-300">
+      <div className="col-span-2 border-r-[1px] space-y-2  border-gray-300">
         <div>
           <div className="font-semibold text-zinc-700 ">Contacts</div>
           <div className="pr-2">
@@ -42,7 +57,10 @@ const OrderAddressAndDetails = ({order}:props) => {
         </div>
       </div>
 
-      <div className="col-span-4">
+      <div className="col-span-3">
+        <div className="text-gray-700 font-semibold">
+          Cost
+        </div>
         <div className="flex justify-between text-gray-500">
           <div>Sub Total</div>
           <div>${order.Total.toFixed(2)}</div>
@@ -59,7 +77,7 @@ const OrderAddressAndDetails = ({order}:props) => {
           <div>Tax</div>
           <div>${0.0}</div>
         </div>
-        <div className="flex justify-between font-semibold text-zinc-700">
+        <div className="flex justify-between font-semibold text-zinc-500">
           <div>Total</div>
           <div>${order.Total.toFixed(2)}</div>
         </div>

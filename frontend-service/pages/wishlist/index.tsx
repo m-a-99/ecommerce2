@@ -12,7 +12,7 @@ import { FetchCart } from "../../Redux/cart";
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const cookies = ParseCookies(context.req.headers.cookie || "");
   await store.dispatch(FetchUserInfo(cookies["jwt"] || ""));
-  if (["Admin", "Seller"].includes(store.getState().userInfo.value?.AccountType || "")) {
+  if (["Admin","SubAdmin","SubSeller", "Seller"].includes(store.getState().userInfo.value?.AccountType || "")) {
     return {
       redirect: {
         permanent: true,

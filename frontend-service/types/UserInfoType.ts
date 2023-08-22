@@ -13,14 +13,16 @@ export type AddressType = {
   StreetAddress: string;
 };
 export type UserInfoType = {
-  _id?: string;
-  AccountType?: string;
+  _id: string;
+  Status:string;
+  Message:string;
+  MessageLog:string;
+  AccountType: string;
   FirstName?: string;
   LastName?: string;
   Email?: string;
   Bio?: string;
   Img?: string;
-  Password?: string;
   Contacts?: ContactType[];
   ShippingAddress?: AddressType;
   BillingAddress?: AddressType;

@@ -16,6 +16,9 @@ export interface ContactType {
 }
 
 export interface UsersType {
+  Status: string;
+  Message: string;
+  MessageLog: string;
   AccountType: string;
   FirstName: string;
   LastName: string;
@@ -23,7 +26,7 @@ export interface UsersType {
   Img: string;
   Bio: string;
   Password: string;
-  Contacts:Types.DocumentArray<ContactType>
+  Contacts: Types.DocumentArray<ContactType>;
   ShippingAddress?: AddressType;
   BillingAddress?: AddressType;
 }
@@ -44,7 +47,10 @@ const Contact = new Schema<ContactType>({
 
 const Users = new Schema<UsersType>(
   {
-    AccountType: { type: String, values: ["Client", "Seller"], required: true },
+    Status: { type: String, values: ["Active", "Banned"], default: "Active" },
+    Message: { type: String, default: "" },
+    MessageLog: { type: String, defult: "" },
+    AccountType: { type: String, values: ["Client", "Seller", "SubSeller", "SubAdmin"], required: true },
     FirstName: { type: String, required: true },
     LastName: { type: String, required: true },
     Email: { type: String, required: true, unique: true },

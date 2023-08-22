@@ -1,7 +1,7 @@
 import { OrderStatusType } from "./OrderStatusType";
 import { ProductType } from "./ProductType"
 import { ShopsType } from "./ShopsType";
-import { AddressType, ContactType } from "./UserInfoType";
+import { AddressType, ContactType, UserInfoType } from "./UserInfoType";
 
 export type OrderItem ={
   Product:ProductType,
@@ -26,9 +26,10 @@ export type OrdersType = {
   DeliverySchedule: string;
   BillingAddress: AddressType;
   ShippingAddress: AddressType;
-  Contacts:ContactType[];
+  Contacts: ContactType[];
   OrderShops: [OrderShop];
   Total: number;
+  User?:UserInfoType;
   SessionId: string;
   createdAt: string;
 };
